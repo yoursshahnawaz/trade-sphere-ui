@@ -1,11 +1,13 @@
 import { configureStore } from '@reduxjs/toolkit'
 import { listenerMiddleware } from './listener'
 import uiReducer from './ui-slice'
+import authReducer from '@/features/auth/auth-slice'
 
 export function makeStore() {
   return configureStore({
     reducer: {
       ui: uiReducer,
+      auth: authReducer,
     },
     middleware: (getDefaultMiddleware) =>
       getDefaultMiddleware().prepend(listenerMiddleware.middleware),
