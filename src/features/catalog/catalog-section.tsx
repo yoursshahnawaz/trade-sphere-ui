@@ -1,6 +1,7 @@
 'use client'
 
 import { useState, type ReactNode } from 'react'
+import { useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { useDebouncedValue } from './use-debounced-value'
@@ -12,8 +13,9 @@ import { SearchBar } from './search-bar'
 import { CatalogFilterBar } from './catalog-filters'
 
 export function CatalogSection(): ReactNode {
+  const initialCategory = useSearchParams().get('category')
   const [q, setQ] = useState('')
-  const [category, setCategory] = useState<string | null>(null)
+  const [category, setCategory] = useState<string | null>(initialCategory)
   const [minPrice, setMinPrice] = useState<number | null>(null)
   const [maxPrice, setMaxPrice] = useState<number | null>(null)
   const [inStock, setInStock] = useState(false)
