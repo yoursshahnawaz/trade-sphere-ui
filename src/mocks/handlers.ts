@@ -28,6 +28,7 @@ export const handlers = [
     return product ? HttpResponse.json({ product }) : new HttpResponse(null, { status: 404 })
   }),
   http.get('/api/categories', () => HttpResponse.json({ categories: listCategories() })),
+  http.post('/api/orders', () => HttpResponse.json({ order: { id: 'order-test' } }, { status: 201 })),
   http.get('/api/cart', () => HttpResponse.json({ items: mswCart })),
   http.put('/api/cart', async ({ request }) => {
     const body = (await request.json()) as CartInputBody
