@@ -37,10 +37,10 @@ Short records of non-obvious engineering choices: **what** was decided, the **al
 - **Decision:** Use `createListenerMiddleware` (not saga) for login-merge/logout-teardown; a small store subscription (not redux-persist) for guest-cart persistence; Next's native `cookies()` (not nookies).
 - **Why:** YAGNI. Saga is unnecessary weight when RTK ships listener middleware; redux-persist is notoriously fragile with App Router SSR hydration; `nookies` is redundant because HTTP-only cookies must be set server-side, which `cookies()` already handles.
 
-### D7 — UI primitives: shadcn/ui (Radix)
+### D7 — UI primitives: shadcn/ui (Base UI)
 - **Alternatives:** Hand-rolled accessible components on plain Tailwind.
-- **Decision:** shadcn/ui (Radix under the hood) for Dialog/Drawer/Dropdown/Tabs.
-- **Why:** The a11y requirements (keyboard-operable carousels/drawers, focus traps, `aria-expanded`) are hard and error-prone to hand-roll. Radix provides correct behavior out of the box while staying pure Tailwind and copy-in (no heavy dependency).
+- **Decision:** shadcn/ui for Dialog/Drawer/Dropdown/Tabs. **Note (corrected at implementation):** the installed shadcn CLI (v4.18) defaults to the `base-nova` style backed by **`@base-ui/react`**, not Radix — so import primitives from `@base-ui/react`, never `@radix-ui/*` (not installed).
+- **Why:** The a11y requirements (keyboard-operable carousels/drawers, focus traps, `aria-expanded`) are hard and error-prone to hand-roll. Base UI provides correct behavior out of the box while staying pure Tailwind and copy-in (no heavy dependency).
 
 ### D8 — Package manager: npm
 - **Decision:** Use npm (Node 24 / npm 11 already installed); do not install pnpm.
@@ -53,8 +53,9 @@ Short records of non-obvious engineering choices: **what** was decided, the **al
 ### D9 — Session: verify Firebase ID token via Google JWKS + our own HttpOnly JWT (no Admin SDK)
 - **Supersedes D2 & D3.**
 - **Alternatives:** Firebase Admin `createSessionCookie` (needs a service-account secret); Firebase Auth Emulator (needs Firebase CLI + Java).
-- **Decision:** Client signs in with Firebase (email/password + Google) → sends the ID token to `POST /api/auth/session` → server verifies it against **Google's public keys with `jose`** (no service account) → mints our own **HS256 session JWT** (`{ sub: uid, email, role }`, short expiry) set **HttpOnly + Secure + SameSite=Lax**. Edge middleware verifies this JWT directly with `jose`.
-- **Why:** Only the **public** Firebase web config is needed (no secret to manage), and because the session token is our own JWT the **Edge middleware can fully verify it** (jose is Edge-compatible) rather than a presence-only check — a cleaner solve than D3.
+- **Decision:** Client signs in with Firebase (email/password + Google) → sends the ID token to `POST /api/auth/session` → server verifies it against **Google's public keys with `jose`** (no service account) → mints our own **HS256 session JWT** (`{ sub: uid, email, role }`) set **HttpOnly + Secure(prod) + SameSite=Lax**. `proxy.ts` verifies this JWT directly with `jose`.
+- **Why:** Only the **public** Firebase web config is needed (no secret to manage), and because the session token is our own JWT the **proxy can fully verify it** rather than a presence-only check — a cleaner solve than D3.
+- **Runtime correction:** Next 16 renamed `middleware.ts` → **`proxy.ts`**, which defaults to the **Node.js runtime** (the `runtime` config is unavailable and throws). The earlier "Edge" framing is dropped; `jose` runs fine on Node 24, so the JWKS + self-minted-JWT design is unchanged. Role is assigned **server-side by endpoint** (`/api/auth/seller-register` is the only path granting `seller`), never trusted from the login body.
 
 ### D10 — Sign-in methods: Email/Password + Google
 - **Decision:** Support both email/password and Google OAuth (`signInWithPopup`).
