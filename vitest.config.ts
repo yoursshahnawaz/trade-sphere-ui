@@ -7,5 +7,9 @@ export default defineConfig({
   test: {
     environment: 'jsdom',
     setupFiles: ['./vitest.setup.ts'],
+    env: {
+      SESSION_JWT_SECRET: 'test-secret-at-least-32-bytes-long-000000',
+      NEXT_PUBLIC_FIREBASE_PROJECT_ID: 'demo-project',
+    },
   },
 })
