@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { toast } from 'sonner'
 import { useAppDispatch } from '@/store/hooks'
-import { setUser } from '@/features/auth/auth-slice'
+import { loggedIn } from '@/features/auth/auth-slice'
 import { authClient } from '@/features/auth/auth-client'
 import { loginSchema, type LoginInput } from '@/lib/schemas/auth-schema'
 import { safeReturnUrl } from '@/features/auth/safe-return-url'
@@ -42,7 +42,7 @@ export function LoginForm(): ReactNode {
     setFormError(null)
     try {
       const user = await authClient.login(values.email, values.password)
-      dispatch(setUser(user))
+      dispatch(loggedIn(user))
       redirectAfterAuth(user)
     } catch (e) {
       handleError(e)
@@ -53,7 +53,7 @@ export function LoginForm(): ReactNode {
     setFormError(null)
     try {
       const user = await authClient.loginWithGoogle()
-      dispatch(setUser(user))
+      dispatch(loggedIn(user))
       redirectAfterAuth(user)
     } catch (e) {
       handleError(e)

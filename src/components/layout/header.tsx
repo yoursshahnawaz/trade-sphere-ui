@@ -5,7 +5,7 @@ import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { ShoppingCart } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
-import { clearUser } from '@/features/auth/auth-slice'
+import { loggedOut } from '@/features/auth/auth-slice'
 import { authClient } from '@/features/auth/auth-client'
 import {
   DropdownMenu,
@@ -23,7 +23,7 @@ export function Header(): ReactNode {
 
   async function handleLogout(): Promise<void> {
     await authClient.logout()
-    dispatch(clearUser())
+    dispatch(loggedOut())
     router.push('/')
     router.refresh()
   }
