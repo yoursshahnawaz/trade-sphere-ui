@@ -6,7 +6,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useAppDispatch } from '@/store/hooks'
-import { setUser } from '@/features/auth/auth-slice'
+import { loggedIn } from '@/features/auth/auth-slice'
 import { authClient } from '@/features/auth/auth-client'
 import { registerSchema, type RegisterInput } from '@/lib/schemas/auth-schema'
 import { getAuthErrorMessage } from '@/features/auth/auth-errors'
@@ -34,7 +34,7 @@ export function RegisterForm(): ReactNode {
     setFormError(null)
     try {
       const user = await authClient.registerBuyer(values.email, values.password)
-      dispatch(setUser(user))
+      dispatch(loggedIn(user))
       router.push('/')
       router.refresh()
     } catch (e) {
@@ -46,7 +46,7 @@ export function RegisterForm(): ReactNode {
     setFormError(null)
     try {
       const user = await authClient.loginWithGoogle()
-      dispatch(setUser(user))
+      dispatch(loggedIn(user))
       router.push('/')
       router.refresh()
     } catch (e) {

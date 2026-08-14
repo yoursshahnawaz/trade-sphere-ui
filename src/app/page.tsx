@@ -1,14 +1,17 @@
 import type { ReactNode } from 'react'
-import { Button } from '@/components/ui/button'
+import { seedProducts } from '@/mocks/seed/products'
+import { ProductCard } from '@/features/catalog/product-card'
 
+// Temporary — Phase 3 replaces this with the infinite catalog + /api/products.
 export default function HomePage(): ReactNode {
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col items-start justify-center gap-4 p-8">
-      <h1 className="text-2xl font-bold">Trade-Sphere</h1>
-      <p className="text-muted-foreground">
-        Foundation is up. Buyer and seller experiences arrive in later phases.
-      </p>
-      <Button>Get started</Button>
+    <main className="mx-auto max-w-6xl px-4 py-8">
+      <h1 className="mb-6 text-2xl font-bold">Featured products</h1>
+      <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-4">
+        {seedProducts.map((p) => (
+          <ProductCard key={p.id} product={p} />
+        ))}
+      </div>
     </main>
   )
 }

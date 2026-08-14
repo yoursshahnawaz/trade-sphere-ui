@@ -6,6 +6,8 @@ import { QueryClientProvider } from '@tanstack/react-query'
 import { makeStore } from '@/store'
 import { getQueryClient } from '@/lib/query/query-client'
 import { AuthBootstrap } from '@/features/auth/auth-bootstrap'
+import { CartPersistor } from '@/features/cart/cart-persistor'
+import { CartDrawer } from '@/features/cart/cart-drawer'
 import { Toaster } from '@/components/ui/sonner'
 
 export interface ProvidersProps {
@@ -21,7 +23,9 @@ export function Providers({ children }: ProvidersProps): ReactNode {
     <Provider store={store}>
       <QueryClientProvider client={getQueryClient()}>
         <AuthBootstrap />
+        <CartPersistor />
         {children}
+        <CartDrawer />
         <Toaster />
       </QueryClientProvider>
     </Provider>
