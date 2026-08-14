@@ -9,14 +9,17 @@ export interface InfiniteScrollOptions {
 
 /**
  * Returns a callback ref for a sentinel element. The IntersectionObserver is
- * created once per sentinel node and reads the latest options via a ref, so it
- * never churns when fetchNextPage/hasNextPage identities change between renders.
+ * created once per sentinel node and reads the latest options via a ref (updated
+ * in an effect), so it never churns when fetchNextPage/hasNextPage identities
+ * change between renders.
  */
 export function useInfiniteScroll(
   options: InfiniteScrollOptions,
 ): (node: HTMLElement | null) => void {
   const optionsRef = useRef(options)
-  optionsRef.current = options
+  useEffect(() => {
+    optionsRef.current = options
+  })
   const observerRef = useRef<IntersectionObserver | null>(null)
 
   const setSentinel = useCallback((node: HTMLElement | null): void => {
