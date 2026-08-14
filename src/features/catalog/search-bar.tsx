@@ -9,9 +9,9 @@ export interface SearchBarProps {
 
 export function SearchBar({ value, onChange }: SearchBarProps): ReactNode {
   return (
-    <div className="w-full">
-      <label htmlFor="product-search" className="sr-only">
-        Search products
+    <div className="flex min-w-[220px] flex-1 flex-col gap-1">
+      <label htmlFor="product-search" className="text-xs font-medium">
+        Search
       </label>
       <input
         id="product-search"
@@ -20,7 +20,7 @@ export function SearchBar({ value, onChange }: SearchBarProps): ReactNode {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search products…"
-        className="w-full rounded-md border bg-background px-3 py-2 text-sm"
+        className="h-9 w-full rounded-md border bg-background px-3 text-sm"
       />
     </div>
   )

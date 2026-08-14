@@ -21,6 +21,8 @@ function fromDollars(v: string): number | null {
   return v === '' ? null : Math.round(Number(v) * 100)
 }
 
+const CONTROL = 'h-9 rounded-md border bg-background px-2 text-sm'
+
 export function CatalogFilterBar(props: CatalogFilterBarProps): ReactNode {
   const { category, onCategory, minPrice, onMinPrice, maxPrice, onMaxPrice, inStock, onInStock } = props
   const { data } = useQuery({
@@ -41,7 +43,7 @@ export function CatalogFilterBar(props: CatalogFilterBarProps): ReactNode {
           id="filter-category"
           value={category ?? ''}
           onChange={(e) => onCategory(e.target.value || null)}
-          className="rounded-md border bg-background px-2 py-1.5 text-sm"
+          className={CONTROL}
         >
           <option value="">All</option>
           {categories.map((c) => (
@@ -57,7 +59,7 @@ export function CatalogFilterBar(props: CatalogFilterBarProps): ReactNode {
           min={0}
           value={toDollars(minPrice)}
           onChange={(e) => onMinPrice(fromDollars(e.target.value))}
-          className="w-20 rounded-md border bg-background px-2 py-1.5 text-sm"
+          className={`${CONTROL} w-24`}
         />
       </div>
       <div className="flex flex-col gap-1">
@@ -68,10 +70,10 @@ export function CatalogFilterBar(props: CatalogFilterBarProps): ReactNode {
           min={0}
           value={toDollars(maxPrice)}
           onChange={(e) => onMaxPrice(fromDollars(e.target.value))}
-          className="w-20 rounded-md border bg-background px-2 py-1.5 text-sm"
+          className={`${CONTROL} w-24`}
         />
       </div>
-      <label className="flex items-center gap-2 text-sm">
+      <label className="flex h-9 items-center gap-2 text-sm">
         <input type="checkbox" checked={inStock} onChange={(e) => onInStock(e.target.checked)} />
         In stock only
       </label>

@@ -55,7 +55,7 @@ export function CatalogSection(): ReactNode {
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-8">
-      <div className="mb-6 flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
+      <div className="mb-6 flex flex-col gap-3 md:flex-row md:flex-wrap md:items-end">
         <SearchBar value={q} onChange={setQ} />
         <CatalogFilterBar
           category={category}
