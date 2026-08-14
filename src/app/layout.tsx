@@ -3,6 +3,8 @@ import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ErrorBoundary } from "@/components/error-boundary";
+import { Header } from "@/components/layout/header";
+import { Footer } from "@/components/layout/footer";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -30,7 +32,11 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           suppresses only <body>'s own attribute mismatch, not the tree. */}
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <Providers>
-          <ErrorBoundary>{children}</ErrorBoundary>
+          <ErrorBoundary>
+            <Header />
+            <div className="flex-1">{children}</div>
+            <Footer />
+          </ErrorBoundary>
         </Providers>
       </body>
     </html>
