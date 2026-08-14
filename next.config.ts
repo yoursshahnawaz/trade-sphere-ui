@@ -2,7 +2,8 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   images: {
-    // Temporary: seed product images (Phase 3 will supply real/optimized assets).
+    formats: ['image/avif', 'image/webp'],
+    // Seed/demo product images.
     remotePatterns: [{ protocol: 'https', hostname: 'picsum.photos' }],
   },
 };
