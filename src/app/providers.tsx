@@ -1,9 +1,9 @@
 'use client'
 
-import { useRef, type ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import { Provider } from 'react-redux'
 import { QueryClientProvider } from '@tanstack/react-query'
-import { makeStore, type AppStore } from '@/store'
+import { makeStore } from '@/store'
 import { getQueryClient } from '@/lib/query/query-client'
 
 export interface ProvidersProps {
@@ -11,13 +11,12 @@ export interface ProvidersProps {
 }
 
 export function Providers({ children }: ProvidersProps): ReactNode {
-  const storeRef = useRef<AppStore | null>(null)
-  if (storeRef.current === null) {
-    storeRef.current = makeStore()
-  }
+  // Lazy initializer: one store per component instance (fresh per request on
+  // the server, once in the browser) without accessing a ref during render.
+  const [store] = useState(makeStore)
 
   return (
-    <Provider store={storeRef.current}>
+    <Provider store={store}>
       <QueryClientProvider client={getQueryClient()}>{children}</QueryClientProvider>
     </Provider>
   )
