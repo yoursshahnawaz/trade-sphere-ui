@@ -83,3 +83,13 @@ Short records of non-obvious engineering choices: **what** was decided, the **al
 ### D14 — Variant selection is UI-only (cart keyed by productId)
 - **Decision:** Product detail shows variant chips (from an optional `product.options`) and requires a selection, but the cart line stays keyed by `productId` — the selected variant is surfaced in the add-to-cart toast, not persisted as a distinct cart line.
 - **Why:** Satisfies the spec's "display variant selections" without reworking the Phase-2 cart/merge/BFF to be variant-aware. Variant-aware cart lines are an accepted deferral for the mock.
+
+---
+
+## Phase 4 — Checkout
+
+### D15 — Orders are server-rendered, not a client Query (for now)
+- **Alternatives:** Model orders as a TanStack Query (per design §3.3) with logout cache invalidation.
+- **Decision:** Place the order via a plain `POST /api/orders` and render the confirmation page as a **server component** reading the order store directly. Orders don't enter the Query cache in Phase 4, and order-cache teardown on logout is deferred (there's no order Query to invalidate).
+- **Why:** The funnel is server-authoritative and confirmation is a one-shot server render — a client order Query adds no value yet. Revisit if an order-history list is added.
+- **Security notes:** order line items + totals are computed from the **server cart** (never trusted from the client body); only `{ method, cardLast4 }` is sent/stored (no full PAN); `GET /api/orders/[id]` enforces `order.uid === session.sub` (no IDOR).
