@@ -70,3 +70,16 @@ Short records of non-obvious engineering choices: **what** was decided, the **al
 - **Alternatives:** Single account with a later "become a seller" onboarding (users can be both).
 - **Decision:** One role per account. Buyers register at `/register`, sellers at `/seller/register` (+ store name); the route sets the role. Shared `/login`; post-login routing by role (seller → `/seller`, buyer → returnUrl or `/`).
 - **Why:** Matches the spec's isolated seller routing and is the simplest way to demo both personas from fresh accounts.
+
+---
+
+## Phase 3 — Buyer & performance
+
+### D13 — Image priority → preload (Next 16)
+- **Updates CODING_GUIDELINES §3.2.2** (which says `priority={true}`).
+- **Decision:** In Next 16 the `next/image` `priority` prop is **deprecated**; use `preload` (alone) on the single above-the-fold LCP image (the carousel hero), and default `loading="lazy"` everywhere else. Enable AVIF via `images.formats: ['image/avif','image/webp']`.
+- **Why:** Verified against the bundled Next 16.3 docs; `priority` still works but new code should use `preload`. Preloading exactly one hero (not every image) protects LCP.
+
+### D14 — Variant selection is UI-only (cart keyed by productId)
+- **Decision:** Product detail shows variant chips (from an optional `product.options`) and requires a selection, but the cart line stays keyed by `productId` — the selected variant is surfaced in the add-to-cart toast, not persisted as a distinct cart line.
+- **Why:** Satisfies the spec's "display variant selections" without reworking the Phase-2 cart/merge/BFF to be variant-aware. Variant-aware cart lines are an accepted deferral for the mock.
