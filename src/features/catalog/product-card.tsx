@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import Link from 'next/link'
 import Image from 'next/image'
 import { toast } from 'sonner'
 import { useAppDispatch } from '@/store/hooks'
@@ -33,16 +34,20 @@ export function ProductCard({ product }: ProductCardProps): ReactNode {
 
   return (
     <article className="flex flex-col gap-3 rounded-lg border p-4">
-      <div className="relative aspect-square overflow-hidden rounded-md bg-muted">
-        <Image
-          src={product.imageUrl}
-          alt={product.title}
-          fill
-          sizes="(max-width: 768px) 50vw, 25vw"
-          className="object-cover"
-        />
-      </div>
-      <h3 className="text-sm font-medium">{product.title}</h3>
+      {/* Link wraps only image + title; the add-to-cart button is a sibling
+          (no interactive element nested inside the <a>). */}
+      <Link href={`/products/${product.id}`} className="group flex flex-col gap-2 rounded-md">
+        <div className="relative aspect-square overflow-hidden rounded-md bg-muted">
+          <Image
+            src={product.imageUrl}
+            alt={product.title}
+            fill
+            sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
+            className="object-cover transition-transform group-hover:scale-105"
+          />
+        </div>
+        <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-medium">{product.title}</h3>
+      </Link>
       <p className="text-sm text-muted-foreground">${(product.priceCents / 100).toFixed(2)}</p>
       <button
         type="button"
