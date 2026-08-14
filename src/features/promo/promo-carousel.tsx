@@ -109,7 +109,7 @@ export function PromoCarousel(): ReactNode {
               className="relative min-w-0 flex-[0_0_100%]"
             >
               <Link href={promo.href} className="block">
-                <div className="relative aspect-[16/6] w-full overflow-hidden bg-muted">
+                <div className="relative h-56 w-full overflow-hidden bg-muted sm:h-72 lg:h-80">
                   <Image
                     src={promo.img}
                     alt={promo.title}
@@ -118,7 +118,7 @@ export function PromoCarousel(): ReactNode {
                     className="object-cover"
                     preload={i === 0}
                   />
-                  <div className="absolute inset-0 flex flex-col justify-center gap-1 bg-gradient-to-r from-black/60 to-transparent p-6 text-white">
+                  <div className="absolute inset-0 flex max-w-xl flex-col justify-center gap-1 bg-gradient-to-r from-black/70 to-transparent p-6 pb-16 text-white">
                     <h2 className="text-xl font-bold sm:text-3xl">{promo.title}</h2>
                     <p className="text-sm sm:text-base">{promo.subtitle}</p>
                   </div>
@@ -129,30 +129,33 @@ export function PromoCarousel(): ReactNode {
         </div>
       </div>
 
-      <button
-        type="button"
-        aria-label="Previous slide"
-        onClick={scrollPrev}
-        className="absolute top-1/2 left-2 -translate-y-1/2 rounded-full bg-background/80 p-2 hover:bg-background"
-      >
-        <ChevronLeft className="size-5" />
-      </button>
-      <button
-        type="button"
-        aria-label="Next slide"
-        onClick={scrollNext}
-        className="absolute top-1/2 right-2 -translate-y-1/2 rounded-full bg-background/80 p-2 hover:bg-background"
-      >
-        <ChevronRight className="size-5" />
-      </button>
-      <button
-        type="button"
-        aria-label={isPlaying ? 'Pause promotions' : 'Play promotions'}
-        onClick={toggleAutoplay}
-        className="absolute right-2 bottom-2 rounded-full bg-background/80 p-2 hover:bg-background"
-      >
-        {isPlaying ? <Pause className="size-4" /> : <Play className="size-4" />}
-      </button>
+      {/* Controls grouped bottom-right so they don't overlap the banner text. */}
+      <div className="absolute right-3 bottom-3 flex items-center gap-2">
+        <button
+          type="button"
+          aria-label="Previous slide"
+          onClick={scrollPrev}
+          className="rounded-full bg-background/80 p-2 hover:bg-background"
+        >
+          <ChevronLeft className="size-5" />
+        </button>
+        <button
+          type="button"
+          aria-label={isPlaying ? 'Pause promotions' : 'Play promotions'}
+          onClick={toggleAutoplay}
+          className="rounded-full bg-background/80 p-2 hover:bg-background"
+        >
+          {isPlaying ? <Pause className="size-4" /> : <Play className="size-4" />}
+        </button>
+        <button
+          type="button"
+          aria-label="Next slide"
+          onClick={scrollNext}
+          className="rounded-full bg-background/80 p-2 hover:bg-background"
+        >
+          <ChevronRight className="size-5" />
+        </button>
+      </div>
 
       <p className="sr-only" aria-live="polite">
         Slide {selectedIndex + 1} of {total}

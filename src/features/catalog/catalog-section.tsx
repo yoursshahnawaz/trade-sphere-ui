@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, type ReactNode } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { useDebouncedValue } from './use-debounced-value'
@@ -13,9 +13,19 @@ import { SearchBar } from './search-bar'
 import { CatalogFilterBar } from './catalog-filters'
 
 export function CatalogSection(): ReactNode {
-  const initialCategory = useSearchParams().get('category')
+  // Category is URL-driven so promo deep-links (?category=…) reactively filter.
+  const router = useRouter()
+  const searchParams = useSearchParams()
+  const category = searchParams.get('category')
+  const setCategory = (value: string | null): void => {
+    const params = new URLSearchParams(searchParams.toString())
+    if (value) params.set('category', value)
+    else params.delete('category')
+    const qs = params.toString()
+    router.replace(qs ? `/?${qs}` : '/', { scroll: false })
+  }
+
   const [q, setQ] = useState('')
-  const [category, setCategory] = useState<string | null>(initialCategory)
   const [minPrice, setMinPrice] = useState<number | null>(null)
   const [maxPrice, setMaxPrice] = useState<number | null>(null)
   const [inStock, setInStock] = useState(false)
