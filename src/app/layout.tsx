@@ -25,7 +25,10 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       lang="en"
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
     >
-      <body className="min-h-full flex flex-col">
+      {/* suppressHydrationWarning: some browser extensions (e.g. Grammarly)
+          inject data-* attributes on <body> before React hydrates. This
+          suppresses only <body>'s own attribute mismatch, not the tree. */}
+      <body className="min-h-full flex flex-col" suppressHydrationWarning>
         <Providers>
           <ErrorBoundary>{children}</ErrorBoundary>
         </Providers>
