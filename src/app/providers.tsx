@@ -5,6 +5,8 @@ import { Provider } from 'react-redux'
 import { QueryClientProvider } from '@tanstack/react-query'
 import { makeStore } from '@/store'
 import { getQueryClient } from '@/lib/query/query-client'
+import { AuthBootstrap } from '@/features/auth/auth-bootstrap'
+import { Toaster } from '@/components/ui/sonner'
 
 export interface ProvidersProps {
   children: ReactNode
@@ -17,7 +19,11 @@ export function Providers({ children }: ProvidersProps): ReactNode {
 
   return (
     <Provider store={store}>
-      <QueryClientProvider client={getQueryClient()}>{children}</QueryClientProvider>
+      <QueryClientProvider client={getQueryClient()}>
+        <AuthBootstrap />
+        {children}
+        <Toaster />
+      </QueryClientProvider>
     </Provider>
   )
 }

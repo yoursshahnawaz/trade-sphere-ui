@@ -6,8 +6,8 @@ Phase-by-phase status for Trade-Sphere UI. Updated at each phase boundary. See `
 
 | Phase | Branch | Status | PR | Notes |
 |---|---|---|---|---|
-| 0 — Foundation | `feat/phase-0-foundation` | 🟡 | — | scaffold, tooling, providers, docs |
-| 1 — Auth & routing | `feat/phase-1-auth` | ⬜ | — | Firebase → session cookie, middleware |
+| 0 — Foundation | `feat/phase-0-foundation` | ✅ | [#1](https://github.com/yoursshahnawaz/trade-sphere-ui/pull/1) | scaffold, tooling, providers, docs |
+| 1 — Auth & routing | `feat/phase-1-auth` | 🟡 | — | Firebase → session cookie, middleware |
 | 2 — Cart & merging | `feat/phase-2-cart` | ⬜ | — | guest cart, merge, teardown, optimistic |
 | 3 — Buyer & perf | `feat/phase-3-buyer` | ⬜ | — | carousel, infinite catalog, product detail |
 | 4 — Checkout | `feat/phase-4-checkout` | ⬜ | — | multi-step funnel + validation |
@@ -16,4 +16,5 @@ Phase-by-phase status for Trade-Sphere UI. Updated at each phase boundary. See `
 
 ## Log
 - **2026-08-14** — Design approved; spec, DECISIONS, PROGRESS, and coding guidelines committed as the planning baseline. No code yet.
-- **2026-08-14** — Phase 0 built on `feat/phase-0-foundation`: Next.js 16 + strict TS, Tailwind v4 + shadcn/ui, RTK + listener + typed hooks, TanStack Query provider, root error boundary, Vitest + MSW harness (10 tests), first schema/seed, feature-folder skeleton. Gate green (typecheck/lint/test/build). Awaiting local verification before push.
+- **2026-08-14** — Phase 0 built on `feat/phase-0-foundation`: Next.js 16 + strict TS, Tailwind v4 + shadcn/ui, RTK + listener + typed hooks, TanStack Query provider, root error boundary, Vitest + MSW harness (10 tests), first schema/seed, feature-folder skeleton. Gate green (typecheck/lint/test/build). Merged in PR #1.
+- **2026-08-14** — Phase 1 built on `feat/phase-1-auth`: Firebase auth (email/password + Google) via ID-token→JWKS verify → HttpOnly session JWT; `proxy.ts` (Node runtime) protecting `/seller/*` + `/checkout` with intent-capture + role gating; login/register/seller-register UI; app shell (header/footer); auth hydration. Security: no client token storage, same-origin checks, open-redirect guard, server-owned roles. Gate green (typecheck/lint/test/build, 40 tests). Awaiting local verification (needs Firebase web config in `.env.local`) before push.
