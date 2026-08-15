@@ -11,6 +11,8 @@ export const productSchema = z.object({
   sellerUid: z.string().min(1).optional(),
   sellerName: z.string().min(1).optional(),
   sellerLocation: z.string().min(1).optional(),
+  ratingAverage: z.number().min(0).max(5).optional(),
+  ratingCount: z.number().int().nonnegative().optional(),
   options: z
     .array(z.object({ name: z.string().min(1), values: z.array(z.string().min(1)).min(1) }))
     .optional(),

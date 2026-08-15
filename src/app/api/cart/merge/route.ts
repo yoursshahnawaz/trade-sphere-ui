@@ -17,5 +17,5 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const parsed = cartInputSchema.safeParse((raw as { items?: unknown }).items)
   if (!parsed.success) return NextResponse.json({ error: 'invalid body' }, { status: 400 })
 
-  return NextResponse.json({ items: mergeIntoCart(session.sub, parsed.data) }, { status: 200 })
+  return NextResponse.json({ items: await mergeIntoCart(session.sub, parsed.data) }, { status: 200 })
 }

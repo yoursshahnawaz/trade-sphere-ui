@@ -35,11 +35,14 @@ export function Header(): ReactNode {
 
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
-      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <Link href={isSeller ? '/seller' : '/'} className="font-display text-xl font-semibold tracking-tight">
+      <div className="mx-auto flex h-14 max-w-6xl items-center justify-between gap-2 px-4">
+        <Link
+          href={isSeller ? '/seller' : '/'}
+          className="shrink-0 whitespace-nowrap font-display text-lg font-semibold tracking-tight sm:text-xl"
+        >
           Trade-Sphere
         </Link>
-        <nav aria-label="Primary" className="flex items-center gap-1 sm:gap-2">
+        <nav aria-label="Primary" className="flex min-w-0 items-center gap-0.5 sm:gap-2">
           {/* Sellers don't shop — shop/offers/cart are buyer-only chrome. */}
           {!isSeller && (
             <Link
@@ -113,12 +116,15 @@ export function Header(): ReactNode {
             </DropdownMenu>
           ) : (
             <>
-              <Link href="/login" className="rounded-md px-3 py-1.5 text-sm font-medium hover:bg-accent">
+              <Link
+                href="/login"
+                className="shrink-0 whitespace-nowrap rounded-md px-2 py-1.5 text-sm font-medium hover:bg-accent sm:px-3"
+              >
                 Log in
               </Link>
               <Link
                 href="/register"
-                className="rounded-md bg-primary px-3 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                className="shrink-0 whitespace-nowrap rounded-md bg-primary px-2.5 py-1.5 text-sm font-medium text-primary-foreground hover:bg-primary/90 sm:px-3"
               >
                 Sign up
               </Link>

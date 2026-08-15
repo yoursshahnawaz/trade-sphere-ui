@@ -27,7 +27,7 @@ export default async function OfferDetailPage({
   const offer = getOffer(id)
   if (!offer) notFound()
 
-  const { items } = queryProducts({ page: 1, limit: 48, category: offer.category })
+  const { items } = await queryProducts({ page: 1, limit: 48, category: offer.category })
 
   return (
     <div className="mx-auto max-w-6xl px-4 py-8">

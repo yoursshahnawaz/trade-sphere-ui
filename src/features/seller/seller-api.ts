@@ -47,3 +47,11 @@ export async function deleteSellerProduct(id: string): Promise<void> {
   const res = await fetch(`/api/seller/products/${id}`, { method: 'DELETE' })
   if (!res.ok) throw new Error('Failed to delete product')
 }
+
+export async function uploadProductImage(file: File): Promise<string> {
+  const body = new FormData()
+  body.append('file', file)
+  const res = await fetch('/api/seller/upload', { method: 'POST', body })
+  if (!res.ok) throw new Error('Failed to upload image')
+  return ((await res.json()) as { url: string }).url
+}

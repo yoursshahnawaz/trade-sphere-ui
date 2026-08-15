@@ -1,88 +1,89 @@
 import type { SellerProduct, SellerProductInput } from '@/lib/schemas/seller-product-schema'
+import { getDb } from './supabase'
+import type { ProductRow } from './db-types'
 
 const img = (seed: string): string => `https://picsum.photos/seed/${seed}/600/600`
 
-// Deterministic per-seller seed so the dashboard/table are populated on first visit.
-// Stock/status values are chosen to surface every status badge (In/Low/Out/Draft).
-const SEED: Omit<SellerProduct, 'sellerUid' | 'id'>[] = [
-  { title: 'Wireless Earbuds Pro', category: 'audio', priceCents: 7999, stock: 24, imageUrl: img('sp1'), status: 'active' },
-  { title: 'Ergonomic Mouse', category: 'peripherals', priceCents: 3499, stock: 3, imageUrl: img('sp2'), status: 'active' },
-  { title: 'Fitness Band', category: 'wearables', priceCents: 5999, salePriceCents: 4499, stock: 40, imageUrl: img('sp3'), status: 'active' },
-  { title: 'Smart Plug', category: 'home', priceCents: 1999, stock: 0, imageUrl: img('sp4'), status: 'active' },
-  { title: 'Gaming Headset', category: 'gaming', priceCents: 8999, stock: 12, imageUrl: img('sp5'), status: 'active' },
-  { title: 'Studio Microphone', category: 'audio', priceCents: 12999, stock: 7, imageUrl: img('sp6'), status: 'draft' },
-]
-
-// Shared via globalThis so the dashboard server component AND the product routes
-// read the same in-memory store in dev, where module state isn't shared.
-const globalForSeller = globalThis as unknown as { __sellerStore?: Map<string, SellerProduct[]> }
-const store = globalForSeller.__sellerStore ?? (globalForSeller.__sellerStore = new Map<string, SellerProduct[]>())
-
-export function listSellerProducts(uid: string): SellerProduct[] {
-  let products = store.get(uid)
-  if (!products) {
-    // Ids are prefixed with the uid so products are unique across sellers in the
-    // unified buyer catalog.
-    products = SEED.map((s, i) => ({ ...s, id: `${uid}-sp${i + 1}`, sellerUid: uid }))
-    store.set(uid, products)
+function toSellerProduct(r: ProductRow): SellerProduct {
+  const p: SellerProduct = {
+    id: r.id,
+    sellerUid: r.seller_uid,
+    title: r.title,
+    category: r.category,
+    priceCents: r.price_cents,
+    stock: r.stock,
+    imageUrl: r.image_url,
+    status: r.status,
   }
-  return products
+  if (r.sale_price_cents != null) p.salePriceCents = r.sale_price_cents
+  return p
 }
 
-export function addSellerProduct(uid: string, input: SellerProductInput): SellerProduct {
-  const products = listSellerProducts(uid) // ensures the seller is seeded first
+export async function listSellerProducts(uid: string): Promise<SellerProduct[]> {
+  const { data } = await getDb()
+    .from('products')
+    .select('*')
+    .eq('seller_uid', uid)
+    .order('created_at', { ascending: false })
+  return ((data ?? []) as ProductRow[]).map(toSellerProduct)
+}
+
+export async function getSellerProduct(uid: string, id: string): Promise<SellerProduct | undefined> {
+  const { data } = await getDb().from('products').select('*').eq('id', id).eq('seller_uid', uid).maybeSingle()
+  const row = data as ProductRow | null
+  return row ? toSellerProduct(row) : undefined
+}
+
+export async function addSellerProduct(uid: string, input: SellerProductInput): Promise<SellerProduct> {
   const id = crypto.randomUUID()
-  const product: SellerProduct = {
-    ...input,
+  const row = {
     id,
-    sellerUid: uid,
-    imageUrl: input.imageUrl ?? img(id), // never trust a client blob: URL
+    seller_uid: uid,
+    title: input.title,
+    category: input.category,
+    price_cents: input.priceCents,
+    sale_price_cents: input.salePriceCents ?? null,
+    stock: input.stock,
+    image_url: input.imageUrl ?? img(id),
+    status: input.status,
   }
-  products.push(product)
-  return product
+  const { data, error } = await getDb().from('products').insert(row).select('*').single()
+  if (error) throw new Error(error.message)
+  return toSellerProduct(data as ProductRow)
 }
 
-export function getSellerProduct(uid: string, id: string): SellerProduct | undefined {
-  return listSellerProducts(uid).find((p) => p.id === id)
-}
-
-export function updateSellerProduct(
+export async function updateSellerProduct(
   uid: string,
   id: string,
   patch: Partial<Omit<SellerProduct, 'id' | 'sellerUid'>>,
-): SellerProduct | undefined {
-  const products = listSellerProducts(uid)
-  const idx = products.findIndex((p) => p.id === id)
-  if (idx < 0) return undefined
-  const updated: SellerProduct = { ...products[idx]!, ...patch }
-  products[idx] = updated
-  return updated
+): Promise<SellerProduct | undefined> {
+  const dbPatch: Record<string, unknown> = {}
+  if (patch.title !== undefined) dbPatch.title = patch.title
+  if (patch.category !== undefined) dbPatch.category = patch.category
+  if (patch.priceCents !== undefined) dbPatch.price_cents = patch.priceCents
+  if ('salePriceCents' in patch) dbPatch.sale_price_cents = patch.salePriceCents ?? null
+  if (patch.stock !== undefined) dbPatch.stock = patch.stock
+  if (patch.imageUrl !== undefined) dbPatch.image_url = patch.imageUrl
+  if (patch.status !== undefined) dbPatch.status = patch.status
+
+  const { data } = await getDb()
+    .from('products')
+    .update(dbPatch)
+    .eq('id', id)
+    .eq('seller_uid', uid)
+    .select('*')
+    .maybeSingle()
+  const row = data as ProductRow | null
+  return row ? toSellerProduct(row) : undefined
 }
 
-export function removeSellerProduct(uid: string, id: string): boolean {
-  const products = listSellerProducts(uid)
-  const idx = products.findIndex((p) => p.id === id)
-  if (idx < 0) return false
-  products.splice(idx, 1)
-  return true
-}
-
-/** All sellers' products (used to feed the unified buyer catalog). */
-export function listAllSellerProducts(): SellerProduct[] {
-  return [...store.values()].flat()
-}
-
-export function findSellerProductById(id: string): SellerProduct | undefined {
-  for (const products of store.values()) {
-    const found = products.find((p) => p.id === id)
-    if (found) return found
-  }
-  return undefined
+export async function removeSellerProduct(uid: string, id: string): Promise<boolean> {
+  const { data } = await getDb().from('products').delete().eq('id', id).eq('seller_uid', uid).select('id')
+  return ((data ?? []) as unknown[]).length > 0
 }
 
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const
 
-// FNV-1a — stable pseudo-value from a string (no Math.random / Date, so tests are deterministic).
 function hash(s: string): number {
   let h = 2166136261
   for (let i = 0; i < s.length; i++) {
@@ -94,18 +95,19 @@ function hash(s: string): number {
 
 export interface SellerAnalytics {
   kpis: { totalSalesCents: number; traffic: number }
-  revenueSeries: { month: string; revenue: number }[] // revenue in cents
+  revenueSeries: { month: string; revenue: number }[]
   topProducts: { title: string; units: number }[]
 }
 
-export function getSellerAnalytics(uid: string): SellerAnalytics {
+export async function getSellerAnalytics(uid: string): Promise<SellerAnalytics> {
   const seed = hash(uid)
   const revenueSeries = MONTHS.map((month, i) => ({
     month,
-    revenue: 400000 + ((seed + i * 97733) % 900000) + i * 35000, // deterministic, gently trending
+    revenue: 400000 + ((seed + i * 97733) % 900000) + i * 35000,
   }))
   const totalSalesCents = revenueSeries.reduce((n, m) => n + m.revenue, 0)
-  const topProducts = listSellerProducts(uid)
+  const products = await listSellerProducts(uid)
+  const topProducts = products
     .map((p) => ({ title: p.title, units: 20 + (hash(p.id) % 480) }))
     .sort((a, b) => b.units - a.units)
     .slice(0, 5)

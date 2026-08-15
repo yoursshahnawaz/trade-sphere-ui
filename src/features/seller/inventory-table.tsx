@@ -13,8 +13,9 @@ import {
   type SortingState,
   type ColumnDef,
 } from '@tanstack/react-table'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Pencil, Plus, Store, Trash2 } from 'lucide-react'
 import { ErrorBoundary } from '@/components/error-boundary'
+import { EmptyState } from '@/components/ui/empty-state'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { productStatus, type ProductStatus } from '@/lib/seller-status'
 import { fetchSellerProducts, updateSellerProduct, deleteSellerProduct } from './seller-api'
@@ -186,6 +187,25 @@ function InventoryTableInner(): ReactNode {
           Retry
         </button>
       </div>
+    )
+  }
+
+  // No products at all (vs. a search that filtered everything out) → a real CTA.
+  if (!isLoading && (data?.length ?? 0) === 0) {
+    return (
+      <EmptyState
+        icon={Store}
+        title="No products yet"
+        description="Add your first product to start selling — it'll appear here and in the buyer catalog."
+        action={
+          <Link
+            href="/seller/products/new"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm"
+          >
+            <Plus className="size-4" /> Add product
+          </Link>
+        }
+      />
     )
   }
 

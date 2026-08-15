@@ -7,7 +7,7 @@ import { listSellerProducts, addSellerProduct } from '@/lib/server/seller-store'
 export async function GET(): Promise<NextResponse> {
   const gate = await requireSeller()
   if ('status' in gate) return denySeller(gate.status)
-  return NextResponse.json({ products: listSellerProducts(gate.session.sub) })
+  return NextResponse.json({ products: await listSellerProducts(gate.session.sub) })
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -27,6 +27,6 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'sale price must be less than price' }, { status: 400 })
   }
 
-  const product = addSellerProduct(gate.session.sub, parsed.data)
+  const product = await addSellerProduct(gate.session.sub, parsed.data)
   return NextResponse.json({ product }, { status: 201 })
 }

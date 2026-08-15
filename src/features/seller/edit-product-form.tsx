@@ -1,7 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from 'next/navigation'
@@ -11,6 +11,7 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { FieldError } from '@/components/ui/field-error'
 import { Skeleton } from '@/components/ui/skeleton'
+import { DropzoneUpload } from './dropzone-upload'
 import { fetchSellerProduct, updateSellerProduct } from './seller-api'
 
 const editSchema = z
@@ -46,6 +47,8 @@ export function EditProductForm({ id }: { id: string }): ReactNode {
   const {
     register,
     handleSubmit,
+    setValue,
+    control,
     formState: { errors, isSubmitting },
   } = useForm<EditForm>({
     resolver: zodResolver(editSchema),
@@ -62,6 +65,8 @@ export function EditProductForm({ id }: { id: string }): ReactNode {
         }
       : undefined,
   })
+
+  const imageUrl = useWatch({ control, name: 'imageUrl' })
 
   const { data: cats } = useQuery({
     queryKey: ['categories'],
@@ -213,7 +218,16 @@ export function EditProductForm({ id }: { id: string }): ReactNode {
       </div>
 
       <div>
-        <Label htmlFor="edit-image">Image URL</Label>
+        <Label>Product image</Label>
+        <div className="mt-1">
+          <DropzoneUpload
+            value={imageUrl}
+            onChange={(url) => setValue('imageUrl', url, { shouldValidate: true, shouldDirty: true })}
+          />
+        </div>
+        <Label htmlFor="edit-image" className="mt-3 block">
+          Or paste an image URL
+        </Label>
         <Input
           id="edit-image"
           type="url"

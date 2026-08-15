@@ -25,7 +25,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const subtotal = items.reduce((n, i) => n + i.priceCents * i.quantity, 0)
   const totals = computeTotals(subtotal)
 
-  const order = createOrder({
+  const order = await createOrder({
     uid: session.sub,
     items,
     shipping: parsed.data.shipping,

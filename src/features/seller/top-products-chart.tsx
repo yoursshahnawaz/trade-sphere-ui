@@ -9,6 +9,13 @@ interface TopProduct {
 }
 
 export function TopProductsChart({ data }: { data: TopProduct[] }): ReactNode {
+  if (data.length === 0) {
+    return (
+      <div className="flex h-72 items-center justify-center rounded-md border border-dashed text-sm text-muted-foreground">
+        No sales data yet.
+      </div>
+    )
+  }
   return (
     <figure aria-label="Top products by units sold" className="m-0">
       <div className="h-72 w-full">

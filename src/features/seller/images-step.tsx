@@ -4,14 +4,16 @@ import type { ReactNode } from 'react'
 import { DropzoneUpload } from './dropzone-upload'
 
 export interface ImagesStepProps {
+  imageUrl: string | undefined
+  onImageChange: (url: string | undefined) => void
   onSubmit: (status: 'active' | 'draft') => void
   isSubmitting: boolean
 }
 
-export function ImagesStep({ onSubmit, isSubmitting }: ImagesStepProps): ReactNode {
+export function ImagesStep({ imageUrl, onImageChange, onSubmit, isSubmitting }: ImagesStepProps): ReactNode {
   return (
     <div className="space-y-4">
-      <DropzoneUpload />
+      <DropzoneUpload value={imageUrl} onChange={onImageChange} />
       <p className="text-sm text-muted-foreground">
         Images are optional — publish now and add them later, or save as a draft.
       </p>

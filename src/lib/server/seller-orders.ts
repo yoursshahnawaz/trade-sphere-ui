@@ -40,8 +40,8 @@ function hash(s: string): number {
 }
 
 /** Deterministic mock orders for a seller's active products. */
-export function listSellerOrders(uid: string): SellerOrder[] {
-  const products = listSellerProducts(uid).filter((p) => p.status === 'active')
+export async function listSellerOrders(uid: string): Promise<SellerOrder[]> {
+  const products = (await listSellerProducts(uid)).filter((p) => p.status === 'active')
   if (products.length === 0) return []
 
   const orders: SellerOrder[] = []
@@ -67,11 +67,11 @@ export function listSellerOrders(uid: string): SellerOrder[] {
   return orders
 }
 
-export function getSellerOrder(uid: string, id: string): SellerOrder | undefined {
-  return listSellerOrders(uid).find((o) => o.id === id)
+export async function getSellerOrder(uid: string, id: string): Promise<SellerOrder | undefined> {
+  return (await listSellerOrders(uid)).find((o) => o.id === id)
 }
 
 /** Orders not yet delivered — the dashboard "active orders" KPI. */
-export function countActiveOrders(uid: string): number {
-  return listSellerOrders(uid).filter((o) => o.status !== 'Delivered').length
+export async function countActiveOrders(uid: string): Promise<number> {
+  return (await listSellerOrders(uid)).filter((o) => o.status !== 'Delivered').length
 }

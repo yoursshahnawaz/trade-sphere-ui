@@ -23,5 +23,5 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
   const parsed = cartInputSchema.safeParse((raw as { items?: unknown }).items)
   if (!parsed.success) return NextResponse.json({ error: 'invalid body' }, { status: 400 })
 
-  return NextResponse.json({ items: saveCart(session.sub, normalizeInputs(parsed.data)) }, { status: 200 })
+  return NextResponse.json({ items: saveCart(session.sub, await normalizeInputs(parsed.data)) }, { status: 200 })
 }

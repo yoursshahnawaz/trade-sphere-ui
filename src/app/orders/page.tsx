@@ -2,9 +2,11 @@ import type { ReactNode } from 'react'
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { Package } from 'lucide-react'
 import { requireSession } from '@/lib/server/http'
 import { listOrdersByUid } from '@/lib/server/order-store'
 import { formatINR } from '@/lib/money'
+import { EmptyState } from '@/components/ui/empty-state'
 
 export const metadata: Metadata = { title: 'Your orders', description: 'Review your Trade-Sphere order history.' }
 
@@ -12,19 +14,25 @@ export default async function OrdersPage(): Promise<ReactNode> {
   const session = await requireSession()
   if (!session) redirect('/login?returnUrl=/orders')
 
-  const orders = listOrdersByUid(session.sub)
+  const orders = await listOrdersByUid(session.sub)
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-bold">Your orders</h1>
       {orders.length === 0 ? (
-        <p className="text-muted-foreground">
-          You have no orders yet.{' '}
-          <Link href="/" className="underline">
-            Start shopping
-          </Link>
-          .
-        </p>
+        <EmptyState
+          icon={Package}
+          title="No orders yet"
+          description="When you place an order, it'll show up here so you can track it."
+          action={
+            <Link
+              href="/"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm"
+            >
+              Start shopping
+            </Link>
+          }
+        />
       ) : (
         <ul className="space-y-3">
           {orders.map((o) => (

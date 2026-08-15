@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: 'Orders' }
 export default async function SellerOrdersPage(): Promise<ReactNode> {
   const session = await requireSession()
   if (!session) redirect('/login?returnUrl=/seller/orders')
-  const orders = listSellerOrders(session.sub)
+  const orders = await listSellerOrders(session.sub)
 
   return (
     <div className="mx-auto max-w-4xl px-4 py-8">

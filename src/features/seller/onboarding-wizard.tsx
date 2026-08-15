@@ -4,6 +4,8 @@ import { useEffect, useReducer, useRef, useState, type ReactNode } from 'react'
 import { useRouter } from 'next/navigation'
 import { useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { Check } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import {
   onboardingReducer,
   initialOnboardingState,
@@ -26,6 +28,7 @@ export function OnboardingWizard(): ReactNode {
   const router = useRouter()
   const queryClient = useQueryClient()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [imageUrl, setImageUrl] = useState<string | undefined>(undefined)
   const headingRef = useRef<HTMLHeadingElement>(null)
 
   useEffect(() => {
@@ -42,6 +45,7 @@ export function OnboardingWizard(): ReactNode {
         description: state.details.description,
         priceCents: state.pricing.priceCents,
         stock: state.pricing.stock,
+        ...(imageUrl ? { imageUrl } : {}),
         status,
       })
       await queryClient.invalidateQueries({ queryKey: ['seller-products'] })
@@ -57,22 +61,46 @@ export function OnboardingWizard(): ReactNode {
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <ol className="mb-6 flex gap-2 text-sm" aria-label="Product onboarding progress">
-        {ONBOARDING_STEPS.map((s, i) => (
-          <li
-            key={s}
-            aria-current={s === state.step ? 'step' : undefined}
-            className={`flex-1 rounded-md border px-3 py-2 text-center ${
-              s === state.step
-                ? 'border-primary bg-primary/10 font-medium'
-                : i < currentIndex
-                  ? 'text-muted-foreground'
-                  : 'text-muted-foreground/60'
-            }`}
-          >
-            {i + 1}. {TITLES[s]}
-          </li>
-        ))}
+      <ol className="mb-6 flex items-center" aria-label="Product onboarding progress">
+        {ONBOARDING_STEPS.map((s, i) => {
+          const active = s === state.step
+          const done = i < currentIndex
+          const last = i === ONBOARDING_STEPS.length - 1
+          return (
+            <li
+              key={s}
+              aria-current={active ? 'step' : undefined}
+              className={cn('flex items-center', !last && 'flex-1')}
+            >
+              <span
+                className={cn(
+                  'grid size-8 shrink-0 place-items-center rounded-full text-sm font-semibold ring-1 transition-colors',
+                  active
+                    ? 'bg-primary text-primary-foreground ring-primary'
+                    : done
+                      ? 'bg-primary/15 text-primary ring-primary/30'
+                      : 'bg-muted text-muted-foreground ring-border',
+                )}
+              >
+                {done ? <Check className="size-4" /> : i + 1}
+              </span>
+              <span
+                className={cn(
+                  'ml-2 hidden whitespace-nowrap text-sm font-medium sm:inline',
+                  active ? 'text-foreground' : 'text-muted-foreground',
+                )}
+              >
+                {TITLES[s]}
+              </span>
+              {!last && (
+                <span
+                  className={cn('mx-2 h-0.5 flex-1', done ? 'bg-primary/40' : 'bg-border')}
+                  aria-hidden="true"
+                />
+              )}
+            </li>
+          )
+        })}
       </ol>
 
       <h2 ref={headingRef} tabIndex={-1} className="mb-4 text-lg font-semibold outline-none">
@@ -85,7 +113,14 @@ export function OnboardingWizard(): ReactNode {
       {state.step === 'pricing' && (
         <PricingStep defaultValues={state.pricing} onSave={(pricing) => dispatch({ type: 'savePricing', pricing })} />
       )}
-      {state.step === 'images' && <ImagesStep onSubmit={submit} isSubmitting={isSubmitting} />}
+      {state.step === 'images' && (
+        <ImagesStep
+          imageUrl={imageUrl}
+          onImageChange={setImageUrl}
+          onSubmit={submit}
+          isSubmitting={isSubmitting}
+        />
+      )}
 
       {state.step !== 'details' && (
         <button type="button" onClick={() => dispatch({ type: 'back' })} className="mt-4 text-sm underline">

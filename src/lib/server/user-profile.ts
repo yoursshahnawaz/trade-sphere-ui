@@ -1,13 +1,14 @@
 import type { ProfileInput } from '@/lib/schemas/profile-schema'
+import { getDb } from './supabase'
 
-const g = globalThis as unknown as { __userProfiles?: Map<string, ProfileInput> }
-const profiles = g.__userProfiles ?? (g.__userProfiles = new Map<string, ProfileInput>())
-
-export function getProfile(uid: string): ProfileInput | null {
-  return profiles.get(uid) ?? null
+export async function getProfile(uid: string): Promise<ProfileInput | null> {
+  const { data } = await getDb().from('profiles').select('name, gender, contact').eq('uid', uid).maybeSingle()
+  return (data as ProfileInput | null) ?? null
 }
 
-export function setProfile(uid: string, profile: ProfileInput): ProfileInput {
-  profiles.set(uid, profile)
+export async function setProfile(uid: string, profile: ProfileInput): Promise<ProfileInput> {
+  await getDb()
+    .from('profiles')
+    .upsert({ uid, name: profile.name, gender: profile.gender, contact: profile.contact })
   return profile
 }

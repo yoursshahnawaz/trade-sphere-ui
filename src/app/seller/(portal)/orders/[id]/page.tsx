@@ -21,7 +21,7 @@ export default async function SellerOrderDetailPage({
   const session = await requireSession()
   if (!session) redirect('/login?returnUrl=/seller/orders')
 
-  const order = getSellerOrder(session.sub, id)
+  const order = await getSellerOrder(session.sub, id)
   if (!order) notFound() // covers both missing and not-owned (ownership scoped by uid)
 
   return (

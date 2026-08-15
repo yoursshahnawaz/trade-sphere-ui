@@ -7,6 +7,7 @@ A multi-vendor e-commerce marketplace UI — buyers shop across sellers, sellers
 - **Next.js 16** (App Router, Turbopack) + **React 19** + **TypeScript** (strict, `noUncheckedIndexedAccess`)
 - **Tailwind v4** + **shadcn/ui** (Base UI)
 - **Redux Toolkit** (cart / auth / ui) + **TanStack Query** (server cache)
+- **Supabase** — Postgres (products, orders, profiles, addresses, reviews), Storage (product images), realtime (live catalog)
 - **Firebase Auth** (client SDK) → server-verified **HttpOnly session JWT** (`jose`)
 - **Zod** schemas (shared client + server), **react-hook-form**
 - **recharts** (seller analytics), **@tanstack/react-table v8** (inventory)
@@ -26,9 +27,16 @@ npm run dev                  # http://localhost:3000
 |---|---|
 | `NEXT_PUBLIC_FIREBASE_API_KEY` / `_AUTH_DOMAIN` / `_PROJECT_ID` / `_APP_ID` | Firebase web config (Console → Project settings → Web app) |
 | `SESSION_JWT_SECRET` | ≥32-byte secret signing the HttpOnly session JWT (`openssl rand -base64 48`) |
+| `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL (Dashboard → Project settings → API) |
+| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/public key — browser realtime + public catalog reads |
+| `SUPABASE_SERVICE_ROLE_KEY` | Supabase service-role key — server-only; the BFF uses it and enforces authz |
 | `NEXT_PUBLIC_SITE_URL` | Optional base URL for metadata/OG links (defaults to `http://localhost:3000`) |
 
 Enable **Email/Password** and **Google** sign-in in Firebase Auth.
+
+### Database
+
+Create a Supabase project, then run [`supabase/schema.sql`](./supabase/schema.sql) in the SQL editor to create the tables, RLS policies, realtime publication, and the `product-images` Storage bucket. Optionally run [`supabase/seed.sql`](./supabase/seed.sql) to load the demo catalog.
 
 ## Scripts
 
@@ -45,8 +53,8 @@ Enable **Email/Password** and **Google** sign-in in Firebase Auth.
 
 - **App Router** (`src/app`) — pages + route handlers. One `<main>` landmark lives in the root layout.
 - **Feature folders** (`src/features/*`) — `auth`, `cart`, `catalog`, `promo`, `checkout`, `seller`; each owns its components, hooks, slice, and API seam.
-- **In-app BFF** — route handlers (`src/app/api/*`) over in-memory stores (`src/lib/server/*`) seeded deterministically. The store is the source of truth; the client sends only ids/quantities and the server re-derives price/stock. Stores that both an RSC and a route handler read use a `globalThis` singleton (dev module isolation).
-- **Unified catalog** — the buyer storefront = base seed + every seller's *active* products; edits/offers a seller makes are reflected to buyers. Sale price is a single `effectivePriceCents()` used by display and billing.
+- **BFF over Supabase Postgres** — route handlers (`src/app/api/*`) call server stores (`src/lib/server/*`) that read/write Postgres with the **service-role** key (bypasses RLS; the BFF enforces per-uid scoping). The client sends only ids/quantities and the server re-derives price/stock. RLS exposes only public catalog data (active products, seller info) to the anon key; reviews/orders/addresses/profiles are service-role only.
+- **Unified catalog + realtime** — the buyer storefront is every seller's *active* product listing; a new/edited listing appears to buyers **live** via a Supabase realtime subscription (anon client) that invalidates the catalog query. Sale price is a single `effectivePriceCents()` used by display and billing. Seller-uploaded images go to Supabase **Storage**.
 - **Schemas** (`src/lib/schemas/*`) — Zod, types inferred, shared across client and server.
 
 ## Auth model
