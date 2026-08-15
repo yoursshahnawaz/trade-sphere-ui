@@ -72,6 +72,7 @@ export function CartDrawer(): ReactNode {
           </p>
           <Link
             href="/checkout"
+            onClick={() => dispatch(setCartDrawerOpen(false))}
             className="w-full rounded-md bg-primary px-3 py-2 text-center text-sm font-medium text-primary-foreground hover:bg-primary/90 aria-disabled:pointer-events-none aria-disabled:opacity-50"
             aria-disabled={items.length === 0}
           >
