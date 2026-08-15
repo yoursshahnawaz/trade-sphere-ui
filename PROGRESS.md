@@ -11,8 +11,8 @@ Phase-by-phase status for Trade-Sphere UI. Updated at each phase boundary. See `
 | 2 — Cart & merging | `feat/phase-2-cart` | ✅ | [#3](https://github.com/yoursshahnawaz/trade-sphere-ui/pull/3) | guest cart, merge, teardown, optimistic |
 | 3 — Buyer & perf | `feat/phase-3-buyer` | ✅ | [#4](https://github.com/yoursshahnawaz/trade-sphere-ui/pull/4) | carousel, infinite catalog, product detail |
 | 4 — Checkout | `feat/phase-4-checkout` | ✅ | [#5](https://github.com/yoursshahnawaz/trade-sphere-ui/pull/5) | multi-step funnel + validation |
-| 5 — Seller portal | `feat/phase-5-seller` | 🟡 | — | analytics, inventory table, onboarding |
-| 6 — Hardening | `feat/phase-6-hardening` | ⬜ | — | a11y sweep, CWV audit, coverage, docs |
+| 5 — Seller portal | `feat/phase-5-seller` | ✅ | [#6](https://github.com/yoursshahnawaz/trade-sphere-ui/pull/6) | analytics, inventory, onboarding, unified catalog + offers |
+| 6 — Hardening | `feat/phase-6-hardening` | 🟡 | — | a11y sweep, CWV audit, coverage, docs |
 
 ## Log
 - **2026-08-14** — Design approved; spec, DECISIONS, PROGRESS, and coding guidelines committed as the planning baseline. No code yet.
