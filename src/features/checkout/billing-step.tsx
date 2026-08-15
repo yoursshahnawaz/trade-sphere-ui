@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 import { z } from 'zod'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { addressSchema, type Address } from '@/lib/schemas/address-schema'
 import type { PaymentStored } from '@/lib/schemas/payment-schema'
@@ -60,14 +60,14 @@ export function BillingStep({ shipping, onSave }: BillingStepProps): ReactNode {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors },
   } = useForm<BillingFormValues>({
     resolver: zodResolver(billingFormSchema),
     defaultValues: { sameBilling: true, method: 'card' },
   })
-  const sameBilling = watch('sameBilling')
-  const method = watch('method')
+  const sameBilling = useWatch({ control, name: 'sameBilling' })
+  const method = useWatch({ control, name: 'method' })
 
   const cardErr = (name: 'cardName' | 'cardNumber' | 'expiry' | 'cvc'): string | undefined => {
     const m = errors[name]?.message

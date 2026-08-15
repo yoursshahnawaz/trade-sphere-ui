@@ -6,15 +6,35 @@ import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { FieldError } from '@/components/ui/field-error'
 
-const FIELDS = [
-  { name: 'fullName', label: 'Full name', autoComplete: 'name', wide: false },
+const COUNTRIES = [
+  'United States',
+  'United Kingdom',
+  'Canada',
+  'Australia',
+  'Germany',
+  'France',
+  'India',
+  'Japan',
+  'Brazil',
+  'Other',
+]
+
+interface FieldDef {
+  name: string
+  label: string
+  autoComplete?: string
+  wide?: boolean
+  type?: 'text' | 'select'
+}
+const FIELDS: FieldDef[] = [
+  { name: 'fullName', label: 'Full name', autoComplete: 'name' },
   { name: 'line1', label: 'Address line 1', autoComplete: 'address-line1', wide: true },
   { name: 'line2', label: 'Address line 2 (optional)', autoComplete: 'address-line2', wide: true },
-  { name: 'city', label: 'City', autoComplete: 'address-level2', wide: false },
-  { name: 'region', label: 'State / Region', autoComplete: 'address-level1', wide: false },
-  { name: 'postalCode', label: 'Postal code', autoComplete: 'postal-code', wide: false },
-  { name: 'country', label: 'Country', autoComplete: 'country-name', wide: false },
-] as const
+  { name: 'city', label: 'City', autoComplete: 'address-level2' },
+  { name: 'region', label: 'State / Region', autoComplete: 'address-level1' },
+  { name: 'postalCode', label: 'Postal code', autoComplete: 'postal-code' },
+  { name: 'country', label: 'Country', autoComplete: 'country-name', type: 'select' },
+]
 
 export interface AddressFieldsProps<T extends FieldValues> {
   register: UseFormRegister<T>
@@ -37,13 +57,31 @@ export function AddressFields<T extends FieldValues>({
         return (
           <div key={f.name} className={f.wide ? 'sm:col-span-2' : ''}>
             <Label htmlFor={id}>{f.label}</Label>
-            <Input
-              id={id}
-              autoComplete={f.autoComplete}
-              aria-invalid={!!message}
-              aria-describedby={message ? `${id}-error` : undefined}
-              {...register(f.name as Path<T>)}
-            />
+            {f.type === 'select' ? (
+              <select
+                id={id}
+                autoComplete={f.autoComplete}
+                aria-invalid={!!message}
+                aria-describedby={message ? `${id}-error` : undefined}
+                {...register(f.name as Path<T>)}
+                className="h-9 w-full rounded-md border bg-background px-2 text-sm"
+              >
+                <option value="">Select…</option>
+                {COUNTRIES.map((c) => (
+                  <option key={c} value={c}>
+                    {c}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <Input
+                id={id}
+                autoComplete={f.autoComplete}
+                aria-invalid={!!message}
+                aria-describedby={message ? `${id}-error` : undefined}
+                {...register(f.name as Path<T>)}
+              />
+            )}
             <FieldError name={id} message={message} />
           </div>
         )

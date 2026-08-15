@@ -10,6 +10,7 @@ const { toastError } = vi.hoisted(() => ({ toastError: vi.fn() }))
 vi.mock('sonner', () => ({ toast: { error: toastError, success: vi.fn() } }))
 
 import { Provider } from 'react-redux'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { makeStore } from '@/store'
 import { setCart } from '@/features/cart/cart-slice'
 import { CheckoutWizard } from './checkout-wizard'
@@ -28,9 +29,11 @@ function setup(): void {
   const store = makeStore()
   store.dispatch(setCart([line]))
   render(
-    <Provider store={store}>
-      <CheckoutWizard />
-    </Provider>,
+    <QueryClientProvider client={new QueryClient()}>
+      <Provider store={store}>
+        <CheckoutWizard />
+      </Provider>
+    </QueryClientProvider>,
   )
 }
 
@@ -40,7 +43,7 @@ async function fillShipping(user: UserEvent): Promise<void> {
   await user.type(screen.getByLabelText('City'), 'London')
   await user.type(screen.getByLabelText('State / Region'), 'Greater London')
   await user.type(screen.getByLabelText('Postal code'), 'EC1A')
-  await user.type(screen.getByLabelText('Country'), 'UK')
+  await user.selectOptions(screen.getByLabelText('Country'), 'United Kingdom')
 }
 
 async function fillCard(user: UserEvent): Promise<void> {

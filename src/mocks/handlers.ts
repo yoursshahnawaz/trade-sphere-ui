@@ -3,9 +3,11 @@ import { normalizeInputs } from '@/lib/server/cart-store'
 import { mergeCarts } from '@/features/cart/cart-merge'
 import { queryProducts, getProduct, listCategories } from '@/lib/server/product-store'
 import type { CartLine } from '@/types'
+import type { Address } from '@/lib/schemas/address-schema'
 
 type CartInputBody = { items: { productId: string; quantity: number }[] }
 let mswCart: CartLine[] = []
+let mswAddresses: Address[] = []
 
 export const handlers = [
   http.get('/api/health', () => HttpResponse.json({ status: 'ok' })),
@@ -29,6 +31,12 @@ export const handlers = [
   }),
   http.get('/api/categories', () => HttpResponse.json({ categories: listCategories() })),
   http.post('/api/orders', () => HttpResponse.json({ order: { id: 'order-test' } }, { status: 201 })),
+  http.get('/api/addresses', () => HttpResponse.json({ addresses: mswAddresses })),
+  http.post('/api/addresses', async ({ request }) => {
+    const a = (await request.json()) as Address
+    mswAddresses = [...mswAddresses, a]
+    return HttpResponse.json({ addresses: mswAddresses }, { status: 201 })
+  }),
   http.get('/api/cart', () => HttpResponse.json({ items: mswCart })),
   http.put('/api/cart', async ({ request }) => {
     const body = (await request.json()) as CartInputBody
