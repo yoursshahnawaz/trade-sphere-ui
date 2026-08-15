@@ -6,7 +6,7 @@ import { useRouter } from 'next/navigation'
 import { toast } from 'sonner'
 import { useAppDispatch, useAppSelector } from '@/store/hooks'
 import { clearCart, selectCartItems } from '@/features/cart/cart-slice'
-import { checkoutReducer, initialCheckoutState, STEPS, type Step } from './checkout-state'
+import { checkoutReducer, initialCheckoutState, STEPS, type Step, type CheckoutState } from './checkout-state'
 import { CartReviewStep } from './cart-review-step'
 import { ShippingStep } from './shipping-step'
 import { BillingStep } from './billing-step'
@@ -21,6 +21,8 @@ const STEP_TITLES: Record<Step, string> = {
   review: 'Review',
 }
 
+const STORAGE_KEY = 'checkout-state'
+
 export function CheckoutWizard(): ReactNode {
   const [state, dispatch] = useReducer(checkoutReducer, initialCheckoutState)
   const items = useAppSelector(selectCartItems)
@@ -28,10 +30,34 @@ export function CheckoutWizard(): ReactNode {
   const router = useRouter()
   const [isPlacing, setIsPlacing] = useState(false)
   const headingRef = useRef<HTMLHeadingElement>(null)
+  const persistReady = useRef(false)
 
   useEffect(() => {
     headingRef.current?.focus()
   }, [state.step])
+
+  // Restore in-progress checkout once on mount (survives a trip to /account and back).
+  useEffect(() => {
+    try {
+      const raw = sessionStorage.getItem(STORAGE_KEY)
+      if (raw) dispatch({ type: 'restore', state: JSON.parse(raw) as CheckoutState })
+    } catch {
+      /* ignore malformed storage */
+    }
+  }, [])
+
+  // Persist on change (skip the initial mount so we don't clobber saved state).
+  useEffect(() => {
+    if (!persistReady.current) {
+      persistReady.current = true
+      return
+    }
+    try {
+      sessionStorage.setItem(STORAGE_KEY, JSON.stringify(state))
+    } catch {
+      /* ignore quota errors */
+    }
+  }, [state])
 
   // While the order is being placed (and the cart is cleared), show a placing
   // screen so the empty-cart view never flashes before the confirmation page.
@@ -76,6 +102,11 @@ export function CheckoutWizard(): ReactNode {
         payment: state.payment,
       })
       appDispatch(clearCart())
+      try {
+        sessionStorage.removeItem(STORAGE_KEY)
+      } catch {
+        /* ignore */
+      }
       router.push(`/orders/${orderId}`)
     } catch {
       toast.error('Could not place your order. Please try again.')

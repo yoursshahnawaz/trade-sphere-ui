@@ -5,12 +5,13 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
+import { Pencil, Plus, Star, Trash2 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Badge } from '@/components/ui/badge'
 import { useConfirm } from '@/components/ui/confirm-dialog'
 import { addressSchema, type Address } from '@/lib/schemas/address-schema'
 import { AddressFields } from '@/features/checkout/address-fields'
-import { fetchAddresses, addAddressReq, updateAddressReq, deleteAddressReq } from './account-api'
+import { fetchAddresses, addAddressReq, updateAddressReq, deleteAddressReq, setDefaultReq } from './account-api'
 
 export function AddressManager(): ReactNode {
   const queryClient = useQueryClient()
@@ -55,6 +56,16 @@ export function AddressManager(): ReactNode {
     }
   }
 
+  async function onSetDefault(index: number): Promise<void> {
+    try {
+      await setDefaultReq(index)
+      await queryClient.invalidateQueries({ queryKey: ['addresses'] })
+      toast.success('Default address updated.')
+    } catch {
+      toast.error('Could not set the default address.')
+    }
+  }
+
   async function onDelete(index: number, name: string): Promise<void> {
     const ok = await confirm({
       title: 'Delete this address?',
@@ -87,11 +98,23 @@ export function AddressManager(): ReactNode {
           {addresses.map((a, i) => (
             <li key={i} className="flex items-start justify-between gap-3 rounded-xl border bg-card p-4 text-sm shadow-sm">
               <div className="min-w-0">
-                <p className="font-medium">{a.fullName}</p>
+                <div className="flex items-center gap-2">
+                  <p className="font-medium">{a.fullName}</p>
+                  {i === 0 && <Badge tone="brand">Default</Badge>}
+                </div>
                 <p className="text-muted-foreground">
                   {a.line1}
                   {a.line2 ? `, ${a.line2}` : ''}, {a.city}, {a.region} {a.postalCode}
                 </p>
+                {i !== 0 && (
+                  <button
+                    type="button"
+                    onClick={() => onSetDefault(i)}
+                    className="mt-2 inline-flex items-center gap-1 text-xs font-medium text-primary hover:underline"
+                  >
+                    <Star className="size-3.5" /> Make default
+                  </button>
+                )}
               </div>
               <div className="flex shrink-0 gap-1">
                 <button

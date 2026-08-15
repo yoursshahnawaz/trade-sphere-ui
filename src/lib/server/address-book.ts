@@ -21,6 +21,16 @@ export function updateAddress(uid: string, index: number, address: Address): Add
   return list
 }
 
+export function setDefaultAddress(uid: string, index: number): Address[] {
+  const list = book.get(uid) ?? []
+  if (index > 0 && index < list.length) {
+    const [item] = list.splice(index, 1)
+    if (item) list.unshift(item) // default lives at index 0
+  }
+  book.set(uid, list)
+  return list
+}
+
 export function removeAddress(uid: string, index: number): Address[] {
   const list = book.get(uid) ?? []
   if (index >= 0 && index < list.length) list.splice(index, 1)

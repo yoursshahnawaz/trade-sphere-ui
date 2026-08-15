@@ -32,12 +32,14 @@ export interface AddressFieldsProps<T extends FieldValues> {
   register: UseFormRegister<T>
   errors: FieldErrors<T>
   idPrefix: string
+  disabled?: boolean
 }
 
 export function AddressFields<T extends FieldValues>({
   register,
   errors,
   idPrefix,
+  disabled = false,
 }: AddressFieldsProps<T>): ReactNode {
   const fe = errors as Record<string, { message?: unknown } | undefined>
   return (
@@ -57,6 +59,7 @@ export function AddressFields<T extends FieldValues>({
                 aria-invalid={!!message}
                 aria-describedby={message ? `${id}-error` : undefined}
                 defaultValue=""
+                disabled={disabled}
                 {...register(name)}
                 className={selectClass}
               >
@@ -74,6 +77,7 @@ export function AddressFields<T extends FieldValues>({
               <select
                 id={id}
                 autoComplete={f.autoComplete}
+                disabled={disabled}
                 {...register(name)}
                 className={selectClass}
                 aria-readonly="true"
@@ -85,6 +89,7 @@ export function AddressFields<T extends FieldValues>({
                 id={id}
                 autoComplete={f.autoComplete}
                 inputMode={f.inputMode}
+                disabled={disabled}
                 aria-invalid={!!message}
                 aria-describedby={message ? `${id}-error` : undefined}
                 {...register(name)}

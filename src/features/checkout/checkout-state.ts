@@ -25,6 +25,7 @@ export type CheckoutAction =
   | { type: 'saveShipping'; shipping: Address }
   | { type: 'saveBilling'; billing: Address; sameBilling: boolean; payment: PaymentStored }
   | { type: 'back' }
+  | { type: 'restore'; state: CheckoutState }
 
 function prevStep(step: Step): Step {
   const i = STEPS.indexOf(step)
@@ -49,6 +50,8 @@ export function checkoutReducer(state: CheckoutState, action: CheckoutAction): C
       }
     case 'back':
       return { ...state, step: prevStep(state.step) }
+    case 'restore':
+      return action.state
     default:
       return state
   }

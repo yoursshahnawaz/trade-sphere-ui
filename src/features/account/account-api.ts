@@ -51,3 +51,13 @@ export async function deleteAddressReq(index: number): Promise<Address[]> {
   if (!res.ok) throw new Error('Failed to delete address')
   return addressesRes.parse(await res.json()).addresses
 }
+
+export async function setDefaultReq(index: number): Promise<Address[]> {
+  const res = await fetch('/api/addresses/default', {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({ index }),
+  })
+  if (!res.ok) throw new Error('Failed to set default address')
+  return addressesRes.parse(await res.json()).addresses
+}
