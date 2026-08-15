@@ -22,7 +22,7 @@ export default async function ProductPage({
   ]
 
   return (
-    <main className="mx-auto max-w-5xl px-4 py-8">
+    <div className="mx-auto max-w-5xl px-4 py-8">
       <div className="grid gap-8 md:grid-cols-2">
         <ErrorBoundary>
           <ProductGallery images={gallery} alt={product.title} />
@@ -35,6 +35,6 @@ export default async function ProductPage({
           </ErrorBoundary>
         </div>
       </div>
-    </main>
+    </div>
   )
 }

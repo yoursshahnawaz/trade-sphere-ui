@@ -23,7 +23,7 @@ export default async function OrderConfirmationPage({
   if (!order || order.uid !== session.sub) notFound()
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-2xl px-4 py-8">
       <div className="mb-6 rounded-md border border-green-500/40 bg-green-500/5 p-4">
         <h1 className="text-xl font-bold">Order confirmed 🎉</h1>
         <p className="text-sm text-muted-foreground">
@@ -62,6 +62,6 @@ export default async function OrderConfirmationPage({
       >
         Continue shopping
       </Link>
-    </main>
+    </div>
   )
 }

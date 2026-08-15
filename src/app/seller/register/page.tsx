@@ -6,6 +6,7 @@ import { SellerRegisterForm } from '@/features/auth/seller-register-form'
 export default function SellerRegisterPage(): ReactNode {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 py-12">
+      <h1 className="sr-only">Start selling</h1>
       <Card>
         <CardHeader>
           <CardTitle>Start selling</CardTitle>

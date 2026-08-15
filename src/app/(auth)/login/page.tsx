@@ -6,6 +6,7 @@ import { LoginForm } from '@/features/auth/login-form'
 export default function LoginPage(): ReactNode {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 py-12">
+      <h1 className="sr-only">Log in</h1>
       <Card>
         <CardHeader>
           <CardTitle>Log in</CardTitle>

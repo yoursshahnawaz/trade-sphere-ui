@@ -5,6 +5,7 @@ import { CatalogSection } from '@/features/catalog/catalog-section'
 export default function HomePage(): ReactNode {
   return (
     <div>
+      <h1 className="sr-only">Trade-Sphere marketplace</h1>
       <PromoCarousel />
       <Suspense>
         <CatalogSection />
