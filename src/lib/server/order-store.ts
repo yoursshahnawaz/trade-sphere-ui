@@ -35,3 +35,9 @@ export function createOrder(input: CreateOrderInput): StoredOrder {
 export function getOrder(id: string): StoredOrder | undefined {
   return orders.get(id)
 }
+
+export function listOrdersByUid(uid: string): StoredOrder[] {
+  return [...orders.values()]
+    .filter((o) => o.uid === uid)
+    .sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1)) // newest first
+}

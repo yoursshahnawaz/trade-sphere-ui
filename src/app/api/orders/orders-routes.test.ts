@@ -13,6 +13,7 @@ import { POST } from './route'
 import { GET } from './[id]/route'
 import { requireSession } from '@/lib/server/http'
 import { saveCart, getCart } from '@/lib/server/cart-store'
+import { createOrder, listOrdersByUid } from '@/lib/server/order-store'
 import type { NextRequest } from 'next/server'
 import type { CartLine } from '@/types'
 
@@ -69,5 +70,14 @@ describe('orders routes', () => {
     vi.mocked(requireSession).mockResolvedValueOnce({ sub: 'other-user', email: 'o@x.com', role: 'buyer' })
     const other = await GET(getReq, { params: Promise.resolve({ id: order.id }) })
     expect(other.status).toBe(404)
+  })
+
+  it('listOrdersByUid returns only that user\'s orders', () => {
+    const totals = { subtotalCents: 3000, taxCents: 240, shippingCents: 500, totalCents: 3740 }
+    createOrder({ uid: 'list-uid', items: [line], shipping: address, billing: address, payment: { method: 'cod' }, totals })
+    createOrder({ uid: 'list-uid', items: [line], shipping: address, billing: address, payment: { method: 'cod' }, totals })
+    const list = listOrdersByUid('list-uid')
+    expect(list).toHaveLength(2)
+    expect(list.every((o) => o.uid === 'list-uid')).toBe(true)
   })
 })

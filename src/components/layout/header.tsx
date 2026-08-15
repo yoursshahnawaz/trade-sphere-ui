@@ -66,6 +66,7 @@ export function Header(): ReactNode {
                   <DropdownMenuLabel>{user.email ?? 'Signed in'}</DropdownMenuLabel>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push('/orders')}>My orders</DropdownMenuItem>
                 {user.role === 'seller' && (
                   <DropdownMenuItem onClick={() => router.push('/seller')}>
                     Seller dashboard
