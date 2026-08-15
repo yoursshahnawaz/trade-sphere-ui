@@ -2,9 +2,11 @@ import type { Product } from '@/types'
 import type { ProductQuery, ProductPage } from '@/lib/schemas/product-query-schema'
 import { getDb } from './supabase'
 import { getSellersMap, getSellerInfo, type SellerInfo } from './sellers'
+import { getRatingsFor, getRatingSummary } from './review-store'
+import type { RatingSummary } from '@/lib/schemas/review-schema'
 import type { ProductRow } from './db-types'
 
-function toProduct(r: ProductRow, sellers: Map<string, SellerInfo>): Product {
+function toProduct(r: ProductRow, sellers: Map<string, SellerInfo>, rating?: RatingSummary): Product {
   const info = sellers.get(r.seller_uid) ?? { name: 'Independent Seller', location: 'India' }
   const p: Product = {
     id: r.id,
@@ -18,6 +20,10 @@ function toProduct(r: ProductRow, sellers: Map<string, SellerInfo>): Product {
     sellerLocation: info.location,
   }
   if (r.sale_price_cents != null) p.salePriceCents = r.sale_price_cents
+  if (rating && rating.count > 0) {
+    p.ratingAverage = rating.average
+    p.ratingCount = rating.count
+  }
   return p
 }
 
@@ -34,7 +40,8 @@ export async function queryProducts(params: ProductQuery): Promise<ProductPage> 
   const { data, count } = await query.order('created_at', { ascending: false }).range(from, from + limit - 1)
   const rows = (data ?? []) as ProductRow[]
   const sellers = await getSellersMap(rows.map((r) => r.seller_uid))
-  const items = rows.map((r) => toProduct(r, sellers))
+  const ratings = await getRatingsFor(rows.map((r) => r.id))
+  const items = rows.map((r) => toProduct(r, sellers, ratings.get(r.id)))
   const total = count ?? 0
   return { items, nextPage: from + rows.length < total ? page + 1 : null }
 }
@@ -44,7 +51,8 @@ export async function getProduct(id: string): Promise<Product | undefined> {
   const row = data as ProductRow | null
   if (!row || row.status !== 'active') return undefined
   const info = await getSellerInfo(row.seller_uid)
-  return toProduct(row, new Map([[row.seller_uid, info]]))
+  const rating = await getRatingSummary(row.id)
+  return toProduct(row, new Map([[row.seller_uid, info]]), rating)
 }
 
 export async function listCategories(): Promise<string[]> {

@@ -8,6 +8,20 @@ vi.mock('@/lib/server/http', async (orig) => {
     requireSession: vi.fn(async () => ({ sub: 'uid-order-test', email: 'x@x.com', role: 'buyer' as const })),
   }
 })
+// In-memory order store keeps the route tests DB-free (real store hits Supabase).
+vi.mock('@/lib/server/order-store', () => {
+  const store = new Map<string, Record<string, unknown>>()
+  let n = 0
+  return {
+    createOrder: vi.fn(async (input: Record<string, unknown>) => {
+      const order = { id: `order-${++n}`, status: 'Processing', createdAt: '2026-01-01T00:00:00.000Z', ...input }
+      store.set(order.id, order)
+      return order
+    }),
+    getOrder: vi.fn(async (id: string) => store.get(id)),
+    listOrdersByUid: vi.fn(async (uid: string) => [...store.values()].filter((o) => o.uid === uid)),
+  }
+})
 
 import { POST } from './route'
 import { GET } from './[id]/route'
@@ -72,11 +86,11 @@ describe('orders routes', () => {
     expect(other.status).toBe(404)
   })
 
-  it('listOrdersByUid returns only that user\'s orders', () => {
+  it('listOrdersByUid returns only that user\'s orders', async () => {
     const totals = { subtotalCents: 3000, taxCents: 240, shippingCents: 500, totalCents: 3740 }
-    createOrder({ uid: 'list-uid', items: [line], shipping: address, billing: address, payment: { method: 'cod' }, totals })
-    createOrder({ uid: 'list-uid', items: [line], shipping: address, billing: address, payment: { method: 'cod' }, totals })
-    const list = listOrdersByUid('list-uid')
+    await createOrder({ uid: 'list-uid', items: [line], shipping: address, billing: address, payment: { method: 'cod' }, totals })
+    await createOrder({ uid: 'list-uid', items: [line], shipping: address, billing: address, payment: { method: 'cod' }, totals })
+    const list = await listOrdersByUid('list-uid')
     expect(list).toHaveLength(2)
     expect(list.every((o) => o.uid === 'list-uid')).toBe(true)
   })

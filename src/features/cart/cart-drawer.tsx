@@ -2,11 +2,12 @@
 
 import type { ReactNode } from 'react'
 import Link from 'next/link'
-import { Minus, Plus, Trash2 } from 'lucide-react'
+import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { setCartDrawerOpen } from '@/store/ui-slice'
 import { setQuantity, removeItem, selectCartItems, selectSubtotalCents } from './cart-slice'
 import { formatINR } from '@/lib/money'
+import { EmptyState } from '@/components/ui/empty-state'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet'
 
 export function CartDrawer(): ReactNode {
@@ -23,7 +24,22 @@ export function CartDrawer(): ReactNode {
         </SheetHeader>
 
         {items.length === 0 ? (
-          <p className="px-4 text-sm text-muted-foreground">Your cart is empty.</p>
+          <div className="flex-1 px-4">
+            <EmptyState
+              icon={ShoppingBag}
+              title="Your cart is empty"
+              description="Browse the marketplace and add something you love."
+              action={
+                <Link
+                  href="/products"
+                  onClick={() => dispatch(setCartDrawerOpen(false))}
+                  className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm"
+                >
+                  Start shopping
+                </Link>
+              }
+            />
+          </div>
         ) : (
           <ul className="flex-1 space-y-3 overflow-y-auto px-4">
             {items.map((item) => (
@@ -64,20 +80,21 @@ export function CartDrawer(): ReactNode {
           </ul>
         )}
 
-        <SheetFooter>
-          <p className="flex justify-between text-sm font-medium" aria-live="polite">
-            <span>Subtotal</span>
-            <span>{formatINR(subtotal)}</span>
-          </p>
-          <Link
-            href="/checkout"
-            onClick={() => dispatch(setCartDrawerOpen(false))}
-            className="w-full rounded-md bg-primary px-3 py-2 text-center text-sm font-medium text-primary-foreground hover:bg-primary/90 aria-disabled:pointer-events-none aria-disabled:opacity-50"
-            aria-disabled={items.length === 0}
-          >
-            Checkout
-          </Link>
-        </SheetFooter>
+        {items.length > 0 && (
+          <SheetFooter>
+            <p className="flex justify-between text-sm font-medium" aria-live="polite">
+              <span>Subtotal</span>
+              <span>{formatINR(subtotal)}</span>
+            </p>
+            <Link
+              href="/checkout"
+              onClick={() => dispatch(setCartDrawerOpen(false))}
+              className="w-full rounded-md bg-primary px-3 py-2 text-center text-sm font-medium text-primary-foreground hover:bg-primary/90"
+            >
+              Checkout
+            </Link>
+          </SheetFooter>
+        )}
       </SheetContent>
     </Sheet>
   )

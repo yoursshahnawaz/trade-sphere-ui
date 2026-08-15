@@ -7,7 +7,7 @@ import { getSellerInfo, setSellerInfo } from '@/lib/server/sellers'
 export async function GET(): Promise<NextResponse> {
   const session = await requireSession()
   if (!session) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-  return NextResponse.json({ profile: getProfile(session.sub) })
+  return NextResponse.json({ profile: await getProfile(session.sub) })
 }
 
 export async function PUT(request: NextRequest): Promise<NextResponse> {
@@ -24,7 +24,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
   const parsed = profileSchema.safeParse(raw)
   if (!parsed.success) return NextResponse.json({ error: 'invalid body' }, { status: 400 })
 
-  const profile = setProfile(session.sub, parsed.data)
+  const profile = await setProfile(session.sub, parsed.data)
   // A seller's name becomes their storefront name shown to buyers (realtime).
   if (session.role === 'seller') {
     const current = await getSellerInfo(session.sub)

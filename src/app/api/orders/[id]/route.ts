@@ -9,7 +9,7 @@ export async function GET(
   const session = await requireSession()
   if (!session) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   const { id } = await params
-  const order = getOrder(id)
+  const order = await getOrder(id)
   if (!order || order.uid !== session.sub) {
     return NextResponse.json({ error: 'not found' }, { status: 404 })
   }

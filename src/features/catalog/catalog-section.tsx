@@ -2,12 +2,14 @@
 
 import { useState, type ReactNode } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { SlidersHorizontal } from 'lucide-react'
+import { PackageSearch, SlidersHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
+import { EmptyState } from '@/components/ui/empty-state'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet'
 import { useDebouncedValue } from './use-debounced-value'
 import { useProducts, type CatalogFilters } from './use-products'
+import { useRealtimeCatalog } from './use-realtime-catalog'
 import { useInfiniteScroll } from './use-infinite-scroll'
 import { ProductCard } from './product-card'
 import { ProductSkeletonCard } from './product-skeleton-card'
@@ -44,6 +46,8 @@ export function CatalogSection(): ReactNode {
 
   const debouncedQ = useDebouncedValue(q, 300)
   const filters: CatalogFilters = { q: debouncedQ, category, minPrice, maxPrice, inStock }
+
+  useRealtimeCatalog() // live catalog: new/updated seller listings appear without a refresh
 
   const {
     data,
@@ -150,7 +154,22 @@ export function CatalogSection(): ReactNode {
               </p>
             )}
             {!isLoading && items.length === 0 && (
-              <p className="py-12 text-center text-muted-foreground">No products match your filters.</p>
+              <EmptyState
+                icon={PackageSearch}
+                title="No products found"
+                description="Try a different search, or clear your filters to see everything."
+                action={
+                  activeCount > 0 ? (
+                    <button
+                      type="button"
+                      onClick={clearFilters}
+                      className="rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+                    >
+                      Clear all filters
+                    </button>
+                  ) : undefined
+                }
+              />
             )}
             <div ref={setSentinel} className="h-px" aria-hidden="true" />
           </>

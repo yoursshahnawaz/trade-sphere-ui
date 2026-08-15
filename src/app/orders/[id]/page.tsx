@@ -24,7 +24,7 @@ export default async function OrderConfirmationPage({
   const session = await requireSession()
   if (!session) redirect(`/login?returnUrl=${encodeURIComponent(`/orders/${id}`)}`)
 
-  const order = getOrder(id)
+  const order = await getOrder(id)
   if (!order || order.uid !== session.sub) notFound()
 
   return (
@@ -40,7 +40,7 @@ export default async function OrderConfirmationPage({
         <h2 id="status-heading" className="mb-4 text-sm font-semibold">
           Order status
         </h2>
-        <OrderTimeline status="Processing" />
+        <OrderTimeline status={order.status} />
         <p className="mt-4 text-xs text-muted-foreground">
           Placed just now · estimated delivery in 3–5 days.
         </p>

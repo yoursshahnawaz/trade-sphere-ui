@@ -1,10 +1,13 @@
 import type { ReactNode } from 'react'
 import type { Metadata } from 'next'
+import Link from 'next/link'
 import { redirect } from 'next/navigation'
+import { Plus, Store } from 'lucide-react'
 import { requireSession } from '@/lib/server/http'
 import { getSellerAnalytics, listSellerProducts } from '@/lib/server/seller-store'
 import { countActiveOrders } from '@/lib/server/seller-orders'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { EmptyState } from '@/components/ui/empty-state'
 import { formatINR } from '@/lib/money'
 import { RevenueChart } from '@/features/seller/revenue-chart'
 import { TopProductsChart } from '@/features/seller/top-products-chart'
@@ -18,8 +21,32 @@ export default async function SellerDashboardPage(): Promise<ReactNode> {
   const session = await requireSession()
   if (!session) redirect('/login?returnUrl=/seller') // defense-in-depth; proxy already gates this
 
-  const { kpis, revenueSeries, topProducts } = await getSellerAnalytics(session.sub)
   const productCount = (await listSellerProducts(session.sub)).length
+
+  // A brand-new seller has no data — show a welcoming call to action instead of
+  // empty charts and misleading zeroed KPIs.
+  if (productCount === 0) {
+    return (
+      <div className="mx-auto max-w-6xl px-4 py-8">
+        <h1 className="mb-6 text-2xl font-bold">Seller dashboard</h1>
+        <EmptyState
+          icon={Store}
+          title="Your storefront is empty"
+          description="List your first product to start selling. Your sales, orders, and analytics will appear here."
+          action={
+            <Link
+              href="/seller/products/new"
+              className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm"
+            >
+              <Plus className="size-4" /> Add your first product
+            </Link>
+          }
+        />
+      </div>
+    )
+  }
+
+  const { kpis, revenueSeries, topProducts } = await getSellerAnalytics(session.sub)
   const activeOrders = await countActiveOrders(session.sub)
 
   const cards = [

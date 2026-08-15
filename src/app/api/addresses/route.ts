@@ -6,7 +6,7 @@ import { listAddresses, addAddress, updateAddress, removeAddress } from '@/lib/s
 export async function GET(): Promise<NextResponse> {
   const session = await requireSession()
   if (!session) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
-  return NextResponse.json({ addresses: listAddresses(session.sub) }, { status: 200 })
+  return NextResponse.json({ addresses: await listAddresses(session.sub) }, { status: 200 })
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
@@ -23,7 +23,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   const parsed = addressSchema.safeParse(raw)
   if (!parsed.success) return NextResponse.json({ error: 'invalid body' }, { status: 400 })
 
-  return NextResponse.json({ addresses: addAddress(session.sub, parsed.data) }, { status: 201 })
+  return NextResponse.json({ addresses: await addAddress(session.sub, parsed.data) }, { status: 201 })
 }
 
 export async function PUT(request: NextRequest): Promise<NextResponse> {
@@ -41,7 +41,7 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
   }
   const parsed = addressSchema.safeParse(raw)
   if (!parsed.success) return NextResponse.json({ error: 'invalid body' }, { status: 400 })
-  return NextResponse.json({ addresses: updateAddress(session.sub, index, parsed.data) })
+  return NextResponse.json({ addresses: await updateAddress(session.sub, index, parsed.data) })
 }
 
 export async function DELETE(request: NextRequest): Promise<NextResponse> {
@@ -50,5 +50,5 @@ export async function DELETE(request: NextRequest): Promise<NextResponse> {
   if (!session) return NextResponse.json({ error: 'unauthorized' }, { status: 401 })
   const index = Number(new URL(request.url).searchParams.get('index'))
   if (!Number.isInteger(index)) return NextResponse.json({ error: 'invalid index' }, { status: 400 })
-  return NextResponse.json({ addresses: removeAddress(session.sub, index) })
+  return NextResponse.json({ addresses: await removeAddress(session.sub, index) })
 }

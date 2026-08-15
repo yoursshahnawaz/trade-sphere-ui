@@ -17,5 +17,5 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   if (typeof index !== 'number' || !Number.isInteger(index)) {
     return NextResponse.json({ error: 'invalid index' }, { status: 400 })
   }
-  return NextResponse.json({ addresses: setDefaultAddress(session.sub, index) })
+  return NextResponse.json({ addresses: await setDefaultAddress(session.sub, index) })
 }

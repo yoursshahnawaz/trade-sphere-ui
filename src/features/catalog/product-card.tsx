@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { AddToCartControl } from '@/features/cart/add-to-cart-control'
+import { StarRating } from '@/features/reviews/star-rating'
 import { formatINR } from '@/lib/money'
 import { Badge } from '@/components/ui/badge'
 import type { Product } from '@/types'
@@ -33,6 +34,9 @@ export function ProductCard({ product }: ProductCardProps): ReactNode {
       </Link>
       {product.sellerName && (
         <p className="-mt-1 truncate text-xs text-muted-foreground">by {product.sellerName}</p>
+      )}
+      {product.ratingCount != null && product.ratingCount > 0 && (
+        <StarRating average={product.ratingAverage ?? 0} count={product.ratingCount} />
       )}
       {onSale ? (
         <p className="text-sm">

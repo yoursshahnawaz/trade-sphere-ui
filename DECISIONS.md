@@ -160,6 +160,7 @@ Short records of non-obvious engineering choices: **what** was decided, the **al
 - **Why:** The app targets an Indian audience; currency, tax, and address shape must match.
 
 ### D27 — Sellers are not buyers; catalog is seller-listed (realtime)
+- **⚠️ Realtime mechanism superseded by D32** (in-process `globalThis` store → Supabase Postgres + anon-client `postgres_changes` subscription).
 - **Decision:** `decideAuth` redirects a seller away from buyer shopping routes (`/`, `/products`, `/offers`, `/checkout`, `/orders`) to `/seller`. The buyer catalog is composed of seller-attributed listings (seller name + location shown on cards/detail); a real seller's new product appears to buyers immediately (shared in-memory `globalThis` store — realtime in-process).
 - **Why:** One role per account (D12). "As soon as a seller lists a product, buyers see it" — satisfied in-process. **A real database (e.g. Supabase) is the production step** for cross-instance persistence/realtime; kept in-memory to honour the minimal-backend scope.
 
@@ -173,7 +174,22 @@ Short records of non-obvious engineering choices: **what** was decided, the **al
 
 ### D29 — Supabase Postgres as the data store; Firebase auth unchanged
 - **Alternatives:** Keep everything in-memory; switch auth to Supabase.
-- **Decision:** Provisioned a Supabase project (`trade-sphere`, ap-south-1/Mumbai). **Firebase stays the identity provider** (D9); Supabase is purely the **database**. The server accesses it with the **service-role key** (bypasses RLS; the BFF still enforces per-uid scoping), while the browser uses the **anon key** for public product/review reads + realtime. RLS: anon may read only `status='active'` products and reviews; everything else (orders/addresses/profiles) is deny-by-default for anon (service-role only) — the four `rls_enabled_no_policy` advisories are intentional.
+- **Decision:** Provisioned a Supabase project (`trade-sphere`, ap-south-1/Mumbai). **Firebase stays the identity provider** (D9); Supabase is purely the **database**. The server accesses it with the **service-role key** (bypasses RLS; the BFF still enforces per-uid scoping), while the browser uses the **anon key** only for public catalog reads + realtime. RLS: anon may read only `status='active'` products (also required for realtime) and public seller info; **reviews**, orders, addresses, and profiles are deny-by-default for anon (service-role only). Reviews are served exclusively via the BFF (which strips the reviewer's `uid`), so the raw table is never anon-readable — a pre-push security review caught and removed an over-permissive anon policy that would have leaked buyer Firebase UIDs.
 - **Stage 1 (this branch):** `products` (catalog + seller listings), `sellers`, seller analytics/orders (derived), and cart re-derivation now read/write Postgres — verified end-to-end (catalog loads 18 active products with seller + INR data). The in-memory seed is deleted. The Supabase client is lazily created so tests never need real creds; the MSW mock layer is fully static (decoupled from the real stores); the pure in-memory store tests are removed (their logic is now SQL) while route tests mock the stores to keep auth/validation coverage.
-- **Pending (next):** migrate `orders`, `profiles`, `addresses` to Postgres; product image uploads to Supabase **Storage**; a client **realtime** subscription so new listings appear live; then reviews (#4).
 - **Why:** Delivers real persistence + the "seller lists → buyers see it" story the brief calls for, without discarding the working Firebase auth or the BFF's authorization model.
+
+### D30 — Orders, profiles, addresses → Postgres (stage 2)
+- **Decision:** `orders` (+ `order_items`), `profiles`, and `addresses` now persist in Postgres. Orders store totals as cents columns and shipping/billing/payment as `jsonb`; `order_items` holds the line snapshot (title/price/qty/image at purchase time). Order `status` (`Processing|Shipped|Delivered`) is a real column that drives the buyer order-timeline (was hard-coded `Processing`). Addresses keep an `is_default` flag; the client stays index-based while the store maps index→row via a stable "default first, then oldest" ordering.
+- **Why:** Completes the durable-data story so order history, profile, and the address book survive restarts and are consistent across instances.
+
+### D31 — Ratings & reviews
+- **Decision:** A `reviews` table (`unique(product_id, uid)`) with an **upsert** so a buyer has exactly one, editable review per product. Only authenticated **buyers** may post (sellers can't shop, so can't review); author name is derived server-side (profile name → email local-part → "A shopper"), never trusted from the body. The product page server-renders the list + summary and refreshes via `router.refresh()` after a post; catalog cards show an aggregate star rating fetched in one batched query (`getRatingsFor`) to avoid N+1. Pure `summarize()` is unit-tested; the route is tested with the store mocked.
+- **Why:** Reviews are core marketplace trust signals and were an explicit polish request; the upsert keeps the demo clean (no duplicate-review spam).
+
+### D32 — Realtime catalog + image uploads to Storage
+- **Decision:** The buyer catalog subscribes to `products` changes through the **anon** browser client and invalidates the cached catalog query on any change (data is still served via the BFF; the anon client is only a signal). This required an anon `SELECT` policy on `status='active'` products, since `postgres_changes` only delivers rows the subscriber can read. Seller product images upload to a public Supabase **Storage** bucket (`product-images`) via a service-role route (`/api/seller/upload`); the drag-and-drop control lifts the returned public URL into the product form. `next.config` allowlists the Storage host for `next/image`.
+- **Why:** Fulfils the interviewer promise ("seller lists → buyers see it live") with a real cross-client mechanism, and replaces placeholder images with genuine uploads — both parts of the full-backend scope.
+
+### D33 — Empty & 404 states
+- **Decision:** A shared `EmptyState` primitive (icon chip + title + line + optional CTA) powers the empty cart, empty orders, and no-results catalog screens; a branded `not-found.tsx` replaces the default 404. The existing design system (D25) is reused rather than re-themed.
+- **Why:** Empty and error surfaces were the last unpolished screens; a single primitive keeps them consistent without a broad redesign.
