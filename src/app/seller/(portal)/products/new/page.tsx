@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import { OnboardingWizard } from '@/features/seller/onboarding-wizard'
+
+export const metadata: Metadata = { title: 'Add product' }
 
 export default function NewProductPage(): ReactNode {
   return (

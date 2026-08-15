@@ -1,7 +1,10 @@
 import { Suspense, type ReactNode } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { LoginForm } from '@/features/auth/login-form'
+
+export const metadata: Metadata = { title: 'Log in', description: 'Sign in to your Trade-Sphere account.' }
 
 export default function LoginPage(): ReactNode {
   return (

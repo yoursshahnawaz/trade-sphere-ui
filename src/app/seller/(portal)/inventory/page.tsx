@@ -1,6 +1,9 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { InventoryTable } from '@/features/seller/inventory-table'
+
+export const metadata: Metadata = { title: 'Inventory' }
 
 export default function SellerInventoryPage(): ReactNode {
   return (

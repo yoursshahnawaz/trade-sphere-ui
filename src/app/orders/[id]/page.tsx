@@ -1,10 +1,13 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
 import { requireSession } from '@/lib/server/http'
 import { getOrder } from '@/lib/server/order-store'
 import { OrderSummary } from '@/features/checkout/order-summary'
 import type { Address } from '@/lib/schemas/address-schema'
+
+export const metadata: Metadata = { title: 'Order details' }
 
 function fmtAddr(a: Address): string {
   return `${a.fullName}, ${a.line1}${a.line2 ? `, ${a.line2}` : ''}, ${a.city}, ${a.region} ${a.postalCode}, ${a.country}`

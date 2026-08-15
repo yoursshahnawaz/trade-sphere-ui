@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { requireSession } from '@/lib/server/http'
 import { getSellerAnalytics, listSellerProducts } from '@/lib/server/seller-store'
@@ -9,6 +10,8 @@ import { TopProductsChart } from '@/features/seller/top-products-chart'
 
 const money = (cents: number): string => `$${Math.round(cents / 100).toLocaleString()}`
 const num = (n: number): string => n.toLocaleString()
+
+export const metadata: Metadata = { title: 'Seller dashboard' }
 
 export default async function SellerDashboardPage(): Promise<ReactNode> {
   const session = await requireSession()

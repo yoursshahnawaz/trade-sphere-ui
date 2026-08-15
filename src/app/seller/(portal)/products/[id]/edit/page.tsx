@@ -1,5 +1,8 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import { EditProductForm } from '@/features/seller/edit-product-form'
+
+export const metadata: Metadata = { title: 'Edit product' }
 
 export default async function EditProductPage({
   params,

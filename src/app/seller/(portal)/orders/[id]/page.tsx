@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
 import { requireSession } from '@/lib/server/http'
@@ -6,6 +7,8 @@ import { getSellerOrder } from '@/lib/server/seller-orders'
 import { OrderStatusBadge } from '@/features/seller/order-status-badge'
 
 const money = (c: number): string => `$${(c / 100).toFixed(2)}`
+
+export const metadata: Metadata = { title: 'Order details' }
 
 export default async function SellerOrderDetailPage({
   params,

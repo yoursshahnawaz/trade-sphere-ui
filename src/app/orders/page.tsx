@@ -1,8 +1,11 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireSession } from '@/lib/server/http'
 import { listOrdersByUid } from '@/lib/server/order-store'
+
+export const metadata: Metadata = { title: 'Your orders', description: 'Review your Trade-Sphere order history.' }
 
 export default async function OrdersPage(): Promise<ReactNode> {
   const session = await requireSession()

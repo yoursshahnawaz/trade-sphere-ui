@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireSession } from '@/lib/server/http'
@@ -6,6 +7,8 @@ import { listSellerOrders } from '@/lib/server/seller-orders'
 import { OrderStatusBadge } from '@/features/seller/order-status-badge'
 
 const money = (c: number): string => `$${(c / 100).toFixed(2)}`
+
+export const metadata: Metadata = { title: 'Orders' }
 
 export default async function SellerOrdersPage(): Promise<ReactNode> {
   const session = await requireSession()

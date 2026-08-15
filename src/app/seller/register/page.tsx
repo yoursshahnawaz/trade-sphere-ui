@@ -1,7 +1,13 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { SellerRegisterForm } from '@/features/auth/seller-register-form'
+
+export const metadata: Metadata = {
+  title: 'Start selling',
+  description: 'Open your Trade-Sphere seller storefront.',
+}
 
 export default function SellerRegisterPage(): ReactNode {
   return (
