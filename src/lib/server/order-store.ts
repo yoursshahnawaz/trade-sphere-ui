@@ -17,7 +17,10 @@ export interface CreateOrderInput {
   totals: OrderTotals
 }
 
-const orders = new Map<string, StoredOrder>()
+// Shared via globalThis so route handlers AND server components (the confirmation
+// page) read the same in-memory store in dev, where module state isn't shared.
+const globalForOrders = globalThis as unknown as { __orderStore?: Map<string, StoredOrder> }
+const orders = globalForOrders.__orderStore ?? (globalForOrders.__orderStore = new Map<string, StoredOrder>())
 
 export function createOrder(input: CreateOrderInput): StoredOrder {
   const order: StoredOrder = {
