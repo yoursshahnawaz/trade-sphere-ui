@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireSession } from '@/lib/server/http'
@@ -7,13 +8,15 @@ import { OrderStatusBadge } from '@/features/seller/order-status-badge'
 
 const money = (c: number): string => `$${(c / 100).toFixed(2)}`
 
+export const metadata: Metadata = { title: 'Orders' }
+
 export default async function SellerOrdersPage(): Promise<ReactNode> {
   const session = await requireSession()
   if (!session) redirect('/login?returnUrl=/seller/orders')
   const orders = listSellerOrders(session.sub)
 
   return (
-    <main className="mx-auto max-w-4xl px-4 py-8">
+    <div className="mx-auto max-w-4xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-bold">Orders</h1>
       {orders.length === 0 ? (
         <p className="text-muted-foreground">No orders yet. Add a product to start selling.</p>
@@ -51,6 +54,6 @@ export default async function SellerOrdersPage(): Promise<ReactNode> {
           </table>
         </div>
       )}
-    </main>
+    </div>
   )
 }

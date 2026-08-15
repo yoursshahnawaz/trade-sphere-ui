@@ -39,7 +39,7 @@ export function Header(): ReactNode {
         <Link href="/" className="text-lg font-bold">
           Trade-Sphere
         </Link>
-        <nav className="flex items-center gap-2">
+        <nav aria-label="Primary" className="flex items-center gap-2">
           {/* Sellers don't shop — the cart is buyer-only chrome. */}
           {!isSeller && (
             <button

@@ -1,11 +1,18 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { RegisterForm } from '@/features/auth/register-form'
 
+export const metadata: Metadata = {
+  title: 'Create your account',
+  description: 'Create a Trade-Sphere buyer account.',
+}
+
 export default function RegisterPage(): ReactNode {
   return (
     <div className="mx-auto flex w-full max-w-md flex-col gap-4 px-4 py-12">
+      <h1 className="sr-only">Create your account</h1>
       <Card>
         <CardHeader>
           <CardTitle>Create your account</CardTitle>

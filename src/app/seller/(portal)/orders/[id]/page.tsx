@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect, notFound } from 'next/navigation'
 import { requireSession } from '@/lib/server/http'
@@ -6,6 +7,8 @@ import { getSellerOrder } from '@/lib/server/seller-orders'
 import { OrderStatusBadge } from '@/features/seller/order-status-badge'
 
 const money = (c: number): string => `$${(c / 100).toFixed(2)}`
+
+export const metadata: Metadata = { title: 'Order details' }
 
 export default async function SellerOrderDetailPage({
   params,
@@ -20,7 +23,7 @@ export default async function SellerOrderDetailPage({
   if (!order) notFound() // covers both missing and not-owned (ownership scoped by uid)
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-2xl px-4 py-8">
       <Link href="/seller/orders" className="text-sm underline">
         ← All orders
       </Link>
@@ -48,6 +51,6 @@ export default async function SellerOrderDetailPage({
         <span>Total</span>
         <span>{money(order.totalCents)}</span>
       </div>
-    </main>
+    </div>
   )
 }

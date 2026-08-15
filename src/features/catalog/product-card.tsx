@@ -41,7 +41,7 @@ export function ProductCard({ product }: ProductCardProps): ReactNode {
         <div className="relative aspect-square overflow-hidden rounded-md bg-muted">
           <Image
             src={product.imageUrl}
-            alt={product.title}
+            alt="" // decorative: the adjacent <h3> title names this link (avoids redundant alt)
             fill
             sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
             className="object-cover transition-transform group-hover:scale-105"

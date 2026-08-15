@@ -127,3 +127,21 @@ Short records of non-obvious engineering choices: **what** was decided, the **al
 ### D21 — Seller orders + role-appropriate chrome
 - **Decision:** Seller "active orders" is backed by deterministic mock orders (`seller-orders.ts`, list + detail RSC pages, ownership scoped by uid) rather than a bare KPI number; the dashboard KPI is the count of non-delivered orders. The global header hides the buyer cart and buyer "My orders" for sellers, showing seller portal links instead (roles are one-per-account, D12).
 - **Why:** Sellers manage orders, they don't shop. Quantities in the deterministic generator use unsigned shifts to stay positive (a signed `>>` on a 32-bit hash can go negative → zero/negative quantities).
+
+---
+
+## Phase 6 — Hardening
+
+### D22 — Accessibility: one `<main>` + skip link + route focus + axe (contrast checked out-of-band)
+- **Alternatives:** Per-page `<main>` landmarks; a matcher lib (`vitest-axe`); trusting color-contrast in jsdom.
+- **Decision:** The root layout owns the single `<main id="main-content" tabIndex={-1}>` landmark with a skip-to-content link; a small `RouteFocus` client component moves focus to it on client-side navigation; each `<nav>` has a distinct `aria-label`; every route has exactly one `<h1>` (sr-only where the visible top heading is a card title/`<h2>`). Automated a11y uses **axe-core directly** (`src/test/axe.ts` + `a11y.test.tsx`) over key surfaces incl. the cart drawer, promo carousel, and account dropdown.
+- **Why:** One landmark can't drift per-page; axe-core avoids matcher-lib peer churn. jsdom computes no layout/color, so `color-contrast` (and the page-level `region`/`landmark-one-main`/`page-has-heading-one` rules, which false-positive on isolated component renders) are disabled in the automated run — **contrast is instead verified out-of-band** via an in-browser axe/Lighthouse pass (documented limitation, not a silent skip). jsdom test shims (`matchMedia`, `IntersectionObserver`, `ResizeObserver`) live in `vitest.setup.ts`.
+
+### D23 — Coverage: reported via v8, per-file threshold on the critical path
+- **Alternatives:** A global coverage gate; no coverage tooling.
+- **Decision:** `@vitest/coverage-v8` with `test:coverage`; **no global threshold** (much of the tree is intentionally presentational — charts, nav), but an **enforced per-file threshold on `checkout-state.ts`** (the step machine that prevents skipping to Review). Gap-fill prioritized real logic (checkout/onboarding state machines, `effectivePriceCents`) over trivial code.
+- **Why:** A global gate on a UI-heavy app rewards testing presentational glue over logic; a targeted threshold protects the security-/correctness-critical path without that pressure.
+
+### D24 — CWV enforced at code level (live Lighthouse out-of-band)
+- **Decision:** Lighthouse needs a real Chrome (not reproducible in this headless env), so CWV is enforced structurally and documented in the README: hero image is the `preload`ed LCP element (product images stay lazy), `recharts` is code-split out of buyer routes, `next/font` + fixed-height wrappers + dimension-matched skeletons prevent CLS, and per-route `metadata`/`generateMetadata` + `metadataBase` cover SEO.
+- **Why:** Honest, falsifiable, code-level guarantees beat an unrepeatable score; the live audit is a documented out-of-band step.

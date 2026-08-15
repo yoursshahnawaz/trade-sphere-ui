@@ -1,10 +1,13 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { InventoryTable } from '@/features/seller/inventory-table'
 
+export const metadata: Metadata = { title: 'Inventory' }
+
 export default function SellerInventoryPage(): ReactNode {
   return (
-    <main className="mx-auto max-w-6xl px-4 py-8">
+    <div className="mx-auto max-w-6xl px-4 py-8">
       <div className="mb-6 flex items-center justify-between gap-4">
         <h1 className="text-2xl font-bold">Inventory</h1>
         <Link
@@ -15,6 +18,6 @@ export default function SellerInventoryPage(): ReactNode {
         </Link>
       </div>
       <InventoryTable />
-    </main>
+    </div>
   )
 }

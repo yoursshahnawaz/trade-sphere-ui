@@ -1,8 +1,11 @@
 import type { ReactNode } from 'react'
+import type { Metadata } from 'next'
 import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireSession } from '@/lib/server/http'
 import { listOrdersByUid } from '@/lib/server/order-store'
+
+export const metadata: Metadata = { title: 'Your orders', description: 'Review your Trade-Sphere order history.' }
 
 export default async function OrdersPage(): Promise<ReactNode> {
   const session = await requireSession()
@@ -11,7 +14,7 @@ export default async function OrdersPage(): Promise<ReactNode> {
   const orders = listOrdersByUid(session.sub)
 
   return (
-    <main className="mx-auto max-w-2xl px-4 py-8">
+    <div className="mx-auto max-w-2xl px-4 py-8">
       <h1 className="mb-6 text-2xl font-bold">Your orders</h1>
       {orders.length === 0 ? (
         <p className="text-muted-foreground">
@@ -42,6 +45,6 @@ export default async function OrdersPage(): Promise<ReactNode> {
           ))}
         </ul>
       )}
-    </main>
+    </div>
   )
 }
