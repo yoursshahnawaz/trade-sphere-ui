@@ -7,9 +7,9 @@ const addr: Address = {
   fullName: 'Ada Lovelace',
   line1: '12 Analytical Ave',
   city: 'London',
-  region: 'Greater London',
-  postalCode: 'EC1',
-  country: 'United Kingdom',
+  region: 'Karnataka',
+  postalCode: '560001',
+  country: 'India',
 }
 const payment: PaymentStored = { method: 'cod' }
 
