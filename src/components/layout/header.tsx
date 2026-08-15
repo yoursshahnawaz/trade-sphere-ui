@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ShoppingCart } from 'lucide-react'
+import { ShoppingCart, User, Tag } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { loggedOut } from '@/features/auth/auth-slice'
 import { authClient } from '@/features/auth/auth-client'
@@ -39,8 +39,17 @@ export function Header(): ReactNode {
         <Link href={isSeller ? '/seller' : '/'} className="font-display text-xl font-semibold tracking-tight">
           Trade-Sphere
         </Link>
-        <nav aria-label="Primary" className="flex items-center gap-2">
-          {/* Sellers don't shop — the cart is buyer-only chrome. */}
+        <nav aria-label="Primary" className="flex items-center gap-1 sm:gap-2">
+          {/* Sellers don't shop — offers + cart are buyer-only chrome. */}
+          {!isSeller && (
+            <Link
+              href="/offers"
+              className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-foreground/80 hover:bg-accent hover:text-foreground"
+            >
+              <Tag className="size-4" />
+              <span className="hidden sm:inline">Offers</span>
+            </Link>
+          )}
           {!isSeller && (
             <button
               type="button"
@@ -62,14 +71,18 @@ export function Header(): ReactNode {
 
           {status === 'authenticated' && user ? (
             <DropdownMenu>
-              <DropdownMenuTrigger className="rounded-md px-3 py-1.5 text-sm font-medium hover:bg-accent">
-                {user.email ?? 'Account'}
+              <DropdownMenuTrigger
+                aria-label="Account menu"
+                className="grid size-9 place-items-center rounded-full ring-1 ring-foreground/10 text-foreground/80 hover:bg-accent hover:text-foreground"
+              >
+                <User className="size-5" />
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end">
                 <DropdownMenuGroup>
                   <DropdownMenuLabel>{user.email ?? 'Signed in'}</DropdownMenuLabel>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={() => router.push('/account')}>My profile</DropdownMenuItem>
                 {isSeller ? (
                   <>
                     <DropdownMenuItem onClick={() => router.push('/seller')}>

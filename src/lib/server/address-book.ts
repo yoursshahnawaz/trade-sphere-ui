@@ -13,3 +13,10 @@ export function addAddress(uid: string, address: Address): Address[] {
   book.set(uid, list)
   return list
 }
+
+export function removeAddress(uid: string, index: number): Address[] {
+  const list = book.get(uid) ?? []
+  if (index >= 0 && index < list.length) list.splice(index, 1)
+  book.set(uid, list)
+  return list
+}
