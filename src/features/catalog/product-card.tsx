@@ -6,13 +6,14 @@ import Image from 'next/image'
 import { toast } from 'sonner'
 import { useAppDispatch } from '@/store/hooks'
 import { addToCart } from '@/features/cart/cart-thunks'
+import { effectivePriceCents } from '@/lib/product-price'
 import type { Product, CartLine } from '@/types'
 
 function lineFromProduct(p: Product): CartLine {
   return {
     productId: p.id,
     title: p.title,
-    priceCents: p.priceCents,
+    priceCents: effectivePriceCents(p),
     imageUrl: p.imageUrl,
     stock: p.stock,
     quantity: 1,
@@ -48,7 +49,14 @@ export function ProductCard({ product }: ProductCardProps): ReactNode {
         </div>
         <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-medium">{product.title}</h3>
       </Link>
-      <p className="text-sm text-muted-foreground">${(product.priceCents / 100).toFixed(2)}</p>
+      {product.salePriceCents != null ? (
+        <p className="text-sm">
+          <span className="font-medium text-foreground">${(product.salePriceCents / 100).toFixed(2)}</span>{' '}
+          <span className="text-muted-foreground line-through">${(product.priceCents / 100).toFixed(2)}</span>
+        </p>
+      ) : (
+        <p className="text-sm text-muted-foreground">${(product.priceCents / 100).toFixed(2)}</p>
+      )}
       <button
         type="button"
         onClick={onAdd}

@@ -4,6 +4,7 @@ import type { ReactNode } from 'react'
 import { toast } from 'sonner'
 import { useAppDispatch } from '@/store/hooks'
 import { addToCart } from '@/features/cart/cart-thunks'
+import { effectivePriceCents } from '@/lib/product-price'
 import type { Product } from '@/types'
 
 export interface AddToCartButtonProps {
@@ -27,7 +28,7 @@ export function AddToCartButton({
       addToCart({
         productId: product.id,
         title: product.title,
-        priceCents: product.priceCents,
+        priceCents: effectivePriceCents(product),
         imageUrl: product.imageUrl,
         stock: product.stock,
         quantity,

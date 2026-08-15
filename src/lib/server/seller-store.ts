@@ -4,16 +4,16 @@ const img = (seed: string): string => `https://picsum.photos/seed/${seed}/600/60
 
 // Deterministic per-seller seed so the dashboard/table are populated on first visit.
 // Stock/status values are chosen to surface every status badge (In/Low/Out/Draft).
-const SEED: Omit<SellerProduct, 'sellerUid'>[] = [
-  { id: 'sp1', title: 'Wireless Earbuds Pro', category: 'audio', priceCents: 7999, stock: 24, imageUrl: img('sp1'), status: 'active' },
-  { id: 'sp2', title: 'Ergonomic Mouse', category: 'peripherals', priceCents: 3499, stock: 3, imageUrl: img('sp2'), status: 'active' },
-  { id: 'sp3', title: 'Fitness Band', category: 'wearables', priceCents: 5999, stock: 0, imageUrl: img('sp3'), status: 'active' },
-  { id: 'sp4', title: 'Smart Plug', category: 'home', priceCents: 1999, stock: 58, imageUrl: img('sp4'), status: 'active' },
-  { id: 'sp5', title: 'Gaming Headset', category: 'gaming', priceCents: 8999, stock: 12, imageUrl: img('sp5'), status: 'active' },
-  { id: 'sp6', title: 'Studio Microphone', category: 'audio', priceCents: 12999, stock: 7, imageUrl: img('sp6'), status: 'draft' },
+const SEED: Omit<SellerProduct, 'sellerUid' | 'id'>[] = [
+  { title: 'Wireless Earbuds Pro', category: 'audio', priceCents: 7999, stock: 24, imageUrl: img('sp1'), status: 'active' },
+  { title: 'Ergonomic Mouse', category: 'peripherals', priceCents: 3499, stock: 3, imageUrl: img('sp2'), status: 'active' },
+  { title: 'Fitness Band', category: 'wearables', priceCents: 5999, salePriceCents: 4499, stock: 40, imageUrl: img('sp3'), status: 'active' },
+  { title: 'Smart Plug', category: 'home', priceCents: 1999, stock: 0, imageUrl: img('sp4'), status: 'active' },
+  { title: 'Gaming Headset', category: 'gaming', priceCents: 8999, stock: 12, imageUrl: img('sp5'), status: 'active' },
+  { title: 'Studio Microphone', category: 'audio', priceCents: 12999, stock: 7, imageUrl: img('sp6'), status: 'draft' },
 ]
 
-// Shared via globalThis so the dashboard server component AND the product route
+// Shared via globalThis so the dashboard server component AND the product routes
 // read the same in-memory store in dev, where module state isn't shared.
 const globalForSeller = globalThis as unknown as { __sellerStore?: Map<string, SellerProduct[]> }
 const store = globalForSeller.__sellerStore ?? (globalForSeller.__sellerStore = new Map<string, SellerProduct[]>())
@@ -21,7 +21,9 @@ const store = globalForSeller.__sellerStore ?? (globalForSeller.__sellerStore = 
 export function listSellerProducts(uid: string): SellerProduct[] {
   let products = store.get(uid)
   if (!products) {
-    products = SEED.map((s) => ({ ...s, sellerUid: uid }))
+    // Ids are prefixed with the uid so products are unique across sellers in the
+    // unified buyer catalog.
+    products = SEED.map((s, i) => ({ ...s, id: `${uid}-sp${i + 1}`, sellerUid: uid }))
     store.set(uid, products)
   }
   return products
@@ -40,6 +42,44 @@ export function addSellerProduct(uid: string, input: SellerProductInput): Seller
   return product
 }
 
+export function getSellerProduct(uid: string, id: string): SellerProduct | undefined {
+  return listSellerProducts(uid).find((p) => p.id === id)
+}
+
+export function updateSellerProduct(
+  uid: string,
+  id: string,
+  patch: Partial<Omit<SellerProduct, 'id' | 'sellerUid'>>,
+): SellerProduct | undefined {
+  const products = listSellerProducts(uid)
+  const idx = products.findIndex((p) => p.id === id)
+  if (idx < 0) return undefined
+  const updated: SellerProduct = { ...products[idx]!, ...patch }
+  products[idx] = updated
+  return updated
+}
+
+export function removeSellerProduct(uid: string, id: string): boolean {
+  const products = listSellerProducts(uid)
+  const idx = products.findIndex((p) => p.id === id)
+  if (idx < 0) return false
+  products.splice(idx, 1)
+  return true
+}
+
+/** All sellers' products (used to feed the unified buyer catalog). */
+export function listAllSellerProducts(): SellerProduct[] {
+  return [...store.values()].flat()
+}
+
+export function findSellerProductById(id: string): SellerProduct | undefined {
+  for (const products of store.values()) {
+    const found = products.find((p) => p.id === id)
+    if (found) return found
+  }
+  return undefined
+}
+
 const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'] as const
 
 // FNV-1a — stable pseudo-value from a string (no Math.random / Date, so tests are deterministic).
@@ -53,7 +93,7 @@ function hash(s: string): number {
 }
 
 export interface SellerAnalytics {
-  kpis: { totalSalesCents: number; activeOrders: number; traffic: number }
+  kpis: { totalSalesCents: number; traffic: number }
   revenueSeries: { month: string; revenue: number }[] // revenue in cents
   topProducts: { title: string; units: number }[]
 }
@@ -69,9 +109,5 @@ export function getSellerAnalytics(uid: string): SellerAnalytics {
     .map((p) => ({ title: p.title, units: 20 + (hash(p.id) % 480) }))
     .sort((a, b) => b.units - a.units)
     .slice(0, 5)
-  return {
-    kpis: { totalSalesCents, activeOrders: 12 + (seed % 40), traffic: 1800 + (seed % 6000) },
-    revenueSeries,
-    topProducts,
-  }
+  return { kpis: { totalSalesCents, traffic: 1800 + (seed % 6000) }, revenueSeries, topProducts }
 }
