@@ -28,7 +28,7 @@ describe('cart routes', () => {
     expect(res.status).toBe(200)
     const { items } = (await res.json()) as { items: CartLine[] }
     expect(items[0]?.productId).toBe('p1')
-    expect(items[0]?.priceCents).toBe(12999)
+    expect(items[0]?.priceCents).toBe(249900)
     expect(items[0]?.quantity).toBe(2)
   })
 

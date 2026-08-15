@@ -24,6 +24,9 @@
 .DS_Store
 *.pem
 
+# local scratch notes (not pushed)
+*.local.md
+
 # debug
 npm-debug.log*
 yarn-debug.log*

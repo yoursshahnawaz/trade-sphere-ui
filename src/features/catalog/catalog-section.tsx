@@ -2,8 +2,10 @@
 
 import { useState, type ReactNode } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
+import { SlidersHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { ErrorBoundary } from '@/components/error-boundary'
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet'
 import { useDebouncedValue } from './use-debounced-value'
 import { useProducts, type CatalogFilters } from './use-products'
 import { useInfiniteScroll } from './use-infinite-scroll'
@@ -29,6 +31,16 @@ export function CatalogSection(): ReactNode {
   const [minPrice, setMinPrice] = useState<number | null>(null)
   const [maxPrice, setMaxPrice] = useState<number | null>(null)
   const [inStock, setInStock] = useState(false)
+  const [filtersOpen, setFiltersOpen] = useState(false)
+
+  const activeCount =
+    (category ? 1 : 0) + (minPrice != null ? 1 : 0) + (maxPrice != null ? 1 : 0) + (inStock ? 1 : 0)
+  function clearFilters(): void {
+    setCategory(null)
+    setMinPrice(null)
+    setMaxPrice(null)
+    setInStock(false)
+  }
 
   const debouncedQ = useDebouncedValue(q, 300)
   const filters: CatalogFilters = { q: debouncedQ, category, minPrice, maxPrice, inStock }
@@ -55,19 +67,58 @@ export function CatalogSection(): ReactNode {
 
   return (
     <section className="mx-auto max-w-6xl px-4 py-8">
-      <div className="mb-6 flex flex-col gap-3 md:flex-row md:flex-wrap md:items-end">
+      <div className="mb-6 flex items-center gap-2">
         <SearchBar value={q} onChange={setQ} />
-        <CatalogFilterBar
-          category={category}
-          onCategory={setCategory}
-          minPrice={minPrice}
-          onMinPrice={setMinPrice}
-          maxPrice={maxPrice}
-          onMaxPrice={setMaxPrice}
-          inStock={inStock}
-          onInStock={setInStock}
-        />
+        <button
+          type="button"
+          onClick={() => setFiltersOpen(true)}
+          className="inline-flex h-10 shrink-0 items-center gap-2 rounded-lg border border-input px-3 text-sm font-medium transition-colors hover:bg-muted"
+        >
+          <SlidersHorizontal className="size-4" />
+          <span className="hidden sm:inline">Filters</span>
+          {activeCount > 0 && (
+            <span className="grid size-5 place-items-center rounded-full bg-primary text-[10px] font-semibold text-primary-foreground">
+              {activeCount}
+            </span>
+          )}
+        </button>
       </div>
+
+      <Sheet open={filtersOpen} onOpenChange={setFiltersOpen}>
+        <SheetContent side="right" className="w-full sm:max-w-sm">
+          <SheetHeader>
+            <SheetTitle>Filters</SheetTitle>
+          </SheetHeader>
+          <div className="flex-1 overflow-y-auto px-4">
+            <CatalogFilterBar
+              category={category}
+              onCategory={setCategory}
+              minPrice={minPrice}
+              onMinPrice={setMinPrice}
+              maxPrice={maxPrice}
+              onMaxPrice={setMaxPrice}
+              inStock={inStock}
+              onInStock={setInStock}
+            />
+          </div>
+          <SheetFooter className="flex-row gap-2">
+            <button
+              type="button"
+              onClick={clearFilters}
+              className="flex-1 rounded-lg border px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
+            >
+              Clear all
+            </button>
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(false)}
+              className="flex-1 rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground"
+            >
+              Show results
+            </button>
+          </SheetFooter>
+        </SheetContent>
+      </Sheet>
 
       <ErrorBoundary>
         {isError ? (

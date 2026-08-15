@@ -2,7 +2,8 @@
 
 import { useState, type ReactNode } from 'react'
 import type { Product } from '@/types'
-import { AddToCartButton } from './add-to-cart-button'
+import { formatINR } from '@/lib/money'
+import { AddToCartControl } from '@/features/cart/add-to-cart-control'
 
 export interface ProductDetailPanelProps {
   product: Product
@@ -20,13 +21,13 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps): ReactN
     <div className="space-y-4">
       {product.salePriceCents != null ? (
         <p className="text-2xl font-semibold">
-          ${(product.salePriceCents / 100).toFixed(2)}
+          {formatINR(product.salePriceCents)}
           <span className="ml-2 text-base font-normal text-muted-foreground line-through">
-            ${(product.priceCents / 100).toFixed(2)}
+            {formatINR(product.priceCents)}
           </span>
         </p>
       ) : (
-        <p className="text-2xl font-semibold">${(product.priceCents / 100).toFixed(2)}</p>
+        <p className="text-2xl font-semibold">{formatINR(product.priceCents)}</p>
       )}
       <p className={outOfStock ? 'text-destructive' : 'text-muted-foreground'}>
         {outOfStock ? 'Out of stock' : `${product.stock} in stock`}
@@ -72,7 +73,7 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps): ReactN
         </div>
       )}
 
-      <AddToCartButton product={product} quantity={quantity} variantLabel={variantLabel} />
+      <AddToCartControl product={product} quantity={quantity} variantLabel={variantLabel} />
     </div>
   )
 }

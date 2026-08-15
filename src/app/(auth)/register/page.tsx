@@ -24,11 +24,13 @@ export default function RegisterPage(): ReactNode {
       </Card>
       <p className="text-center text-sm text-muted-foreground">
         Already have an account?{' '}
-        <Link href="/login" className="font-medium underline">
+        <Link href="/login" className="font-medium text-foreground underline">
           Log in
         </Link>
-        {' · '}
-        <Link href="/seller/register" className="font-medium underline">
+      </p>
+      <p className="text-center text-sm text-muted-foreground">
+        Want to sell?{' '}
+        <Link href="/seller/register" className="font-medium text-foreground underline">
           Sell on Trade-Sphere
         </Link>
       </p>

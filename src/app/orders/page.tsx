@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { redirect } from 'next/navigation'
 import { requireSession } from '@/lib/server/http'
 import { listOrdersByUid } from '@/lib/server/order-store'
+import { formatINR } from '@/lib/money'
 
 export const metadata: Metadata = { title: 'Your orders', description: 'Review your Trade-Sphere order history.' }
 
@@ -39,7 +40,7 @@ export default async function OrdersPage(): Promise<ReactNode> {
                     {o.items.reduce((n, i) => n + i.quantity, 0)} item(s)
                   </p>
                 </div>
-                <span className="font-semibold">${(o.totals.totalCents / 100).toFixed(2)}</span>
+                <span className="font-semibold">{formatINR(o.totals.totalCents)}</span>
               </Link>
             </li>
           ))}

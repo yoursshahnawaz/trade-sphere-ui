@@ -5,9 +5,9 @@ export interface OrderTotals {
   totalCents: number
 }
 
-const TAX_RATE = 0.08
-const FREE_SHIPPING_THRESHOLD_CENTS = 5000
-const FLAT_SHIPPING_CENTS = 500
+const TAX_RATE = 0.18 // GST
+const FREE_SHIPPING_THRESHOLD_CENTS = 50000 // ₹500
+const FLAT_SHIPPING_CENTS = 4900 // ₹49
 
 export function computeTotals(subtotalCents: number): OrderTotals {
   const taxCents = Math.round(subtotalCents * TAX_RATE)

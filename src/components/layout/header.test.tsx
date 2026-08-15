@@ -19,7 +19,7 @@ describe('Header account menu', () => {
         <Header />
       </Provider>,
     )
-    await userEvent.click(screen.getByRole('button', { name: 'a@b.com' }))
+    await userEvent.click(screen.getByRole('button', { name: /account menu/i }))
     expect(await screen.findByText('Log out')).toBeInTheDocument()
   })
 })

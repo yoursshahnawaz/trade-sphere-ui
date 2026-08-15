@@ -7,26 +7,26 @@ describe('computeTotals', () => {
   })
 
   it('below free-shipping threshold charges flat shipping', () => {
-    // 3000 → tax round(240)=240, shipping 500 → total 3740
+    // 3000 → GST round(540)=540, shipping 4900 → total 8440
     expect(computeTotals(3000)).toEqual({
       subtotalCents: 3000,
-      taxCents: 240,
-      shippingCents: 500,
-      totalCents: 3740,
+      taxCents: 540,
+      shippingCents: 4900,
+      totalCents: 8440,
     })
   })
 
-  it('at/above threshold is free shipping', () => {
-    expect(computeTotals(5000)).toEqual({
-      subtotalCents: 5000,
-      taxCents: 400,
+  it('at/above ₹500 is free shipping', () => {
+    expect(computeTotals(50000)).toEqual({
+      subtotalCents: 50000,
+      taxCents: 9000,
       shippingCents: 0,
-      totalCents: 5400,
+      totalCents: 59000,
     })
   })
 
-  it('rounds tax to the nearest cent', () => {
-    // 1299 * 0.08 = 103.92 → 104
-    expect(computeTotals(1299).taxCents).toBe(104)
+  it('rounds GST to the nearest paisa', () => {
+    // 1299 * 0.18 = 233.82 → 234
+    expect(computeTotals(1299).taxCents).toBe(234)
   })
 })

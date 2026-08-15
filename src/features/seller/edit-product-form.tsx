@@ -10,6 +10,7 @@ import { z } from 'zod'
 import { Label } from '@/components/ui/label'
 import { Input } from '@/components/ui/input'
 import { FieldError } from '@/components/ui/field-error'
+import { Skeleton } from '@/components/ui/skeleton'
 import { fetchSellerProduct, updateSellerProduct } from './seller-api'
 
 const editSchema = z
@@ -93,7 +94,20 @@ export function EditProductForm({ id }: { id: string }): ReactNode {
     }
   }
 
-  if (isLoading) return <p className="text-muted-foreground">Loading…</p>
+  if (isLoading) {
+    return (
+      <div className="space-y-4">
+        <Skeleton className="h-9 w-full" />
+        <Skeleton className="h-9 w-full" />
+        <Skeleton className="h-20 w-full" />
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Skeleton className="h-9 w-full" />
+          <Skeleton className="h-9 w-full" />
+        </div>
+        <Skeleton className="h-9 w-32" />
+      </div>
+    )
+  }
   if (isError || !product) {
     return (
       <div role="alert" className="rounded-md border border-destructive/40 bg-destructive/5 p-4 text-sm">
@@ -147,7 +161,7 @@ export function EditProductForm({ id }: { id: string }): ReactNode {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <Label htmlFor="edit-price">Price (USD)</Label>
+          <Label htmlFor="edit-price">Price (₹)</Label>
           <Input
             id="edit-price"
             type="number"
@@ -159,7 +173,7 @@ export function EditProductForm({ id }: { id: string }): ReactNode {
           <FieldError name="edit-price" message={errors.priceDollars?.message} />
         </div>
         <div>
-          <Label htmlFor="edit-sale">Offer / sale price (USD, optional)</Label>
+          <Label htmlFor="edit-sale">Offer / sale price (₹, optional)</Label>
           <Input
             id="edit-sale"
             type="number"

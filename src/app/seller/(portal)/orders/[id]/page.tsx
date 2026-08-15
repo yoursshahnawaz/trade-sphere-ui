@@ -5,8 +5,10 @@ import { redirect, notFound } from 'next/navigation'
 import { requireSession } from '@/lib/server/http'
 import { getSellerOrder } from '@/lib/server/seller-orders'
 import { OrderStatusBadge } from '@/features/seller/order-status-badge'
+import { OrderTimeline } from '@/features/orders/order-timeline'
+import { formatINR } from '@/lib/money'
 
-const money = (c: number): string => `$${(c / 100).toFixed(2)}`
+const money = (c: number): string => formatINR(c)
 
 export const metadata: Metadata = { title: 'Order details' }
 
@@ -37,7 +39,14 @@ export default async function SellerOrderDetailPage({
         <OrderStatusBadge status={order.status} />
       </div>
 
-      <ul className="mb-4 divide-y rounded-md border">
+      <section aria-labelledby="s-status" className="mb-6 rounded-xl border bg-card p-5">
+        <h2 id="s-status" className="mb-4 text-sm font-semibold">
+          Status
+        </h2>
+        <OrderTimeline status={order.status} />
+      </section>
+
+      <ul className="mb-4 divide-y rounded-xl border">
         {order.items.map((it, i) => (
           <li key={i} className="flex justify-between p-3 text-sm">
             <span>

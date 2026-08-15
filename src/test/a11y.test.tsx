@@ -93,7 +93,7 @@ describe('a11y (axe)', () => {
 
   it('Header — seller with account menu open', async () => {
     renderWith(<Header />, (s) => s.dispatch(setUser({ uid: 'u2', email: 'seller@x.com', role: 'seller' })))
-    await userEvent.click(screen.getByRole('button', { name: 'seller@x.com' }))
+    await userEvent.click(screen.getByRole('button', { name: /account menu/i }))
     await screen.findByText('Log out')
     await expectNoAxeViolations(document.body)
   })

@@ -4,11 +4,11 @@ import { paymentFormSchema, paymentStoredSchema } from './payment-schema'
 
 const validAddress = {
   fullName: 'Ada Lovelace',
-  line1: '12 Analytical Ave',
-  city: 'London',
-  region: 'Greater London',
-  postalCode: 'EC1',
-  country: 'UK',
+  line1: '12 MG Road',
+  city: 'Bengaluru',
+  region: 'Karnataka',
+  postalCode: '560001',
+  country: 'India',
 }
 
 describe('addressSchema', () => {

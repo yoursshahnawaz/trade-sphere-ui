@@ -3,6 +3,7 @@
 import type { ReactNode } from 'react'
 import { useAppSelector } from '@/store/hooks'
 import { selectCartItems, selectSubtotalCents } from '@/features/cart/cart-slice'
+import { formatINR } from '@/lib/money'
 import { OrderSummary } from './order-summary'
 import type { Address } from '@/lib/schemas/address-schema'
 import type { PaymentStored } from '@/lib/schemas/payment-schema'
@@ -45,7 +46,7 @@ export function ReviewStep({ shipping, billing, payment, onPlaceOrder, isPlacing
             <span>
               {i.title} × {i.quantity}
             </span>
-            <span>${((i.priceCents * i.quantity) / 100).toFixed(2)}</span>
+            <span>{formatINR(i.priceCents * i.quantity)}</span>
           </li>
         ))}
       </ul>

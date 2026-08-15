@@ -37,6 +37,12 @@ beforeAll(() => server.listen({ onUnhandledRequest: 'error' }))
 afterEach(() => {
   cleanup()
   server.resetHandlers()
+  try {
+    sessionStorage.clear()
+    localStorage.clear()
+  } catch {
+    /* no storage in this environment */
+  }
 })
 
 afterAll(() => server.close())

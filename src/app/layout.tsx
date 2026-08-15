@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Fraunces, Manrope } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
 import { ErrorBoundary } from "@/components/error-boundary";
@@ -7,14 +7,17 @@ import { Header } from "@/components/layout/header";
 import { Footer } from "@/components/layout/footer";
 import { RouteFocus } from "@/components/layout/route-focus";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+// Distinctive pairing: characterful serif display + clean geometric-humanist body.
+const fontDisplay = Fraunces({
+  variable: "--font-display",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const fontSans = Manrope({
+  variable: "--font-sans",
   subsets: ["latin"],
+  display: "swap",
 });
 
 export const metadata: Metadata = {
@@ -33,7 +36,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${fontDisplay.variable} ${fontSans.variable} h-full antialiased`}
     >
       {/* suppressHydrationWarning: some browser extensions (e.g. Grammarly)
           inject data-* attributes on <body> before React hydrates. This

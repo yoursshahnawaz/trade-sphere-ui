@@ -1,6 +1,7 @@
 'use client'
 
 import type { ReactNode } from 'react'
+import { Search } from 'lucide-react'
 
 export interface SearchBarProps {
   value: string
@@ -9,10 +10,14 @@ export interface SearchBarProps {
 
 export function SearchBar({ value, onChange }: SearchBarProps): ReactNode {
   return (
-    <div className="flex min-w-[220px] flex-1 flex-col gap-1">
-      <label htmlFor="product-search" className="text-xs font-medium">
-        Search
+    <div className="relative min-w-0 flex-1">
+      <label htmlFor="product-search" className="sr-only">
+        Search products
       </label>
+      <Search
+        className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground"
+        aria-hidden="true"
+      />
       <input
         id="product-search"
         type="search"
@@ -20,7 +25,7 @@ export function SearchBar({ value, onChange }: SearchBarProps): ReactNode {
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder="Search products…"
-        className="h-9 w-full rounded-md border bg-background px-3 text-sm"
+        className="h-10 w-full rounded-lg border border-input bg-card pl-9 pr-3 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
       />
     </div>
   )

@@ -39,11 +39,11 @@ function setup(): void {
 
 async function fillShipping(user: UserEvent): Promise<void> {
   await user.type(screen.getByLabelText('Full name'), 'Ada Lovelace')
-  await user.type(screen.getByLabelText('Address line 1'), '12 Analytical Ave')
-  await user.type(screen.getByLabelText('City'), 'London')
-  await user.type(screen.getByLabelText('State / Region'), 'Greater London')
-  await user.type(screen.getByLabelText('Postal code'), 'EC1A')
-  await user.selectOptions(screen.getByLabelText('Country'), 'United Kingdom')
+  await user.type(screen.getByLabelText('Address line 1'), '12 MG Road')
+  await user.type(screen.getByLabelText('City'), 'Bengaluru')
+  await user.selectOptions(screen.getByLabelText('State'), 'Karnataka')
+  await user.type(screen.getByLabelText('PIN code'), '560001')
+  // Country is fixed to India — no selection needed.
 }
 
 async function fillCard(user: UserEvent): Promise<void> {

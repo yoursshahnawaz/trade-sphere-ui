@@ -1,10 +1,14 @@
 'use client'
 
 import { useState, type ReactNode } from 'react'
+import Link from 'next/link'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery } from '@tanstack/react-query'
+import { cn } from '@/lib/utils'
+import { Badge } from '@/components/ui/badge'
 import { addressSchema, type Address } from '@/lib/schemas/address-schema'
+import { fetchAddresses } from '@/features/account/account-api'
 import { AddressFields } from './address-fields'
 
 export interface ShippingStepProps {
@@ -12,30 +16,30 @@ export interface ShippingStepProps {
   onSave: (address: Address) => void
 }
 
+type Selection = 'auto' | 'new' | number
+
 export function ShippingStep({ defaultValues, onSave }: ShippingStepProps): ReactNode {
   const {
     register,
     handleSubmit,
-    reset,
     formState: { errors },
   } = useForm<Address>({
     resolver: zodResolver(addressSchema),
-    defaultValues: defaultValues ?? undefined,
+    defaultValues: defaultValues ?? { country: 'India' },
   })
   const [saveAddress, setSaveAddress] = useState(false)
+  const [selection, setSelection] = useState<Selection>('auto')
 
-  const { data } = useQuery({
-    queryKey: ['addresses'],
-    queryFn: async (): Promise<Address[]> => {
-      const res = await fetch('/api/addresses')
-      if (!res.ok) return []
-      const body = (await res.json()) as { addresses: Address[] }
-      return body.addresses
-    },
-  })
+  const { data } = useQuery({ queryKey: ['addresses'], queryFn: fetchAddresses })
   const addresses = data ?? []
 
-  async function onSubmit(address: Address): Promise<void> {
+  // Default (index 0) is preselected unless the user came back with an entered address.
+  const effective: 'new' | number =
+    selection === 'auto' ? (!defaultValues && addresses.length > 0 ? 0 : 'new') : selection
+  const usingSaved = typeof effective === 'number'
+  const selected = usingSaved ? addresses[effective] : undefined
+
+  async function saveNew(address: Address): Promise<void> {
     if (saveAddress) {
       try {
         await fetch('/api/addresses', {
@@ -51,41 +55,107 @@ export function ShippingStep({ defaultValues, onSave }: ShippingStepProps): Reac
   }
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
+    <div className="space-y-5">
       {addresses.length > 0 && (
-        <div>
-          <label htmlFor="saved-address" className="text-xs font-medium">
-            Use a saved address
-          </label>
-          <select
-            id="saved-address"
-            defaultValue=""
-            onChange={(e) => {
-              const a = addresses[Number(e.target.value)]
-              if (a) reset(a)
-            }}
-            className="h-9 w-full rounded-md border bg-background px-2 text-sm"
-          >
-            <option value="">New address…</option>
+        <div className="space-y-2">
+          <p className="text-sm font-medium">Deliver to</p>
+          <div className="grid gap-2 sm:grid-cols-2">
             {addresses.map((a, i) => (
-              <option key={i} value={i}>
-                {a.fullName} — {a.line1}, {a.city}
-              </option>
+              <button
+                key={i}
+                type="button"
+                onClick={() => setSelection(i)}
+                aria-pressed={effective === i}
+                className={cn(
+                  'rounded-xl border p-3 text-left text-sm transition-colors',
+                  effective === i ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted',
+                )}
+              >
+                <div className="flex items-center gap-2">
+                  <span className="font-medium">{a.fullName}</span>
+                  {i === 0 && <Badge tone="brand">Default</Badge>}
+                </div>
+                <p className="text-muted-foreground">
+                  {a.line1}, {a.city}, {a.region} {a.postalCode}
+                </p>
+              </button>
             ))}
-          </select>
+            <button
+              type="button"
+              onClick={() => setSelection('new')}
+              aria-pressed={effective === 'new'}
+              className={cn(
+                'rounded-xl border border-dashed p-3 text-left text-sm font-medium transition-colors',
+                effective === 'new' ? 'border-primary bg-primary/5 ring-1 ring-primary' : 'hover:bg-muted',
+              )}
+            >
+              + Use a new address
+            </button>
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Saved addresses are read-only here.{' '}
+            <Link href="/account" className="font-medium text-foreground underline">
+              Manage saved addresses
+            </Link>
+          </p>
         </div>
       )}
 
-      <AddressFields register={register} errors={errors} idPrefix="ship" />
-
-      <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" checked={saveAddress} onChange={(e) => setSaveAddress(e.target.checked)} />
-        Save this address for next time
-      </label>
-
-      <button type="submit" className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
-        Continue to billing
-      </button>
-    </form>
+      {usingSaved && selected ? (
+        <div className="space-y-4">
+          <dl className="grid gap-x-4 gap-y-2 rounded-xl border bg-muted/40 p-4 text-sm sm:grid-cols-2">
+            <div>
+              <dt className="text-xs text-muted-foreground">Name</dt>
+              <dd className="font-medium">{selected.fullName}</dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">Address</dt>
+              <dd>
+                {selected.line1}
+                {selected.line2 ? `, ${selected.line2}` : ''}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">City / State</dt>
+              <dd>
+                {selected.city}, {selected.region}
+              </dd>
+            </div>
+            <div>
+              <dt className="text-xs text-muted-foreground">PIN / Country</dt>
+              <dd>
+                {selected.postalCode}, {selected.country}
+              </dd>
+            </div>
+          </dl>
+          <button
+            type="button"
+            onClick={() => onSave(selected)}
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm"
+          >
+            Continue to billing
+          </button>
+        </div>
+      ) : (
+        <form onSubmit={handleSubmit(saveNew)} className="space-y-4" noValidate>
+          <AddressFields register={register} errors={errors} idPrefix="ship" />
+          <label className="flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={saveAddress}
+              onChange={(e) => setSaveAddress(e.target.checked)}
+              className="size-4 accent-primary"
+            />
+            Save this address for next time
+          </label>
+          <button
+            type="submit"
+            className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm"
+          >
+            Continue to billing
+          </button>
+        </form>
+      )}
+    </div>
   )
 }
