@@ -3,7 +3,7 @@
 import { useState, type ReactNode } from 'react'
 import type { Product } from '@/types'
 import { formatINR } from '@/lib/money'
-import { AddToCartButton } from './add-to-cart-button'
+import { AddToCartControl } from '@/features/cart/add-to-cart-control'
 
 export interface ProductDetailPanelProps {
   product: Product
@@ -73,7 +73,7 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps): ReactN
         </div>
       )}
 
-      <AddToCartButton product={product} quantity={quantity} variantLabel={variantLabel} />
+      <AddToCartControl product={product} quantity={quantity} variantLabel={variantLabel} />
     </div>
   )
 }
