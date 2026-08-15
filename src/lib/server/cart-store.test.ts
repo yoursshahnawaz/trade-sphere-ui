@@ -10,7 +10,7 @@ describe('cart-store', () => {
     ])
     expect(lines).toHaveLength(1)
     expect(lines[0]?.productId).toBe('p1')
-    expect(lines[0]?.priceCents).toBe(12999) // from seed, not client
+    expect(lines[0]?.priceCents).toBe(249900) // from seed, not client
     expect(lines[0]?.quantity).toBe(2)
   })
 

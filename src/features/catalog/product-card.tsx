@@ -50,6 +50,9 @@ export function ProductCard({ product }: ProductCardProps): ReactNode {
         </div>
         <h3 className="line-clamp-2 min-h-[2.5rem] text-sm font-medium">{product.title}</h3>
       </Link>
+      {product.sellerName && (
+        <p className="-mt-1 truncate text-xs text-muted-foreground">by {product.sellerName}</p>
+      )}
       {product.salePriceCents != null ? (
         <p className="text-sm">
           <span className="font-semibold text-foreground">{formatINR(product.salePriceCents)}</span>{' '}

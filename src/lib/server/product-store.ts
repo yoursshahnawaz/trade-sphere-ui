@@ -3,8 +3,10 @@ import type { ProductQuery, ProductPage } from '@/lib/schemas/product-query-sche
 import type { SellerProduct } from '@/lib/schemas/seller-product-schema'
 import { seedProducts } from '@/mocks/seed/products'
 import { listAllSellerProducts, findSellerProductById } from './seller-store'
+import { getSellerInfo } from './sellers'
 
 function sellerToProduct(s: SellerProduct): Product {
+  const info = getSellerInfo(s.sellerUid)
   const p: Product = {
     id: s.id,
     title: s.title,
@@ -12,6 +14,9 @@ function sellerToProduct(s: SellerProduct): Product {
     stock: s.stock,
     category: s.category,
     imageUrl: s.imageUrl,
+    sellerUid: s.sellerUid,
+    sellerName: info.name,
+    sellerLocation: info.location,
   }
   if (s.salePriceCents != null) p.salePriceCents = s.salePriceCents
   return p

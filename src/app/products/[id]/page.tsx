@@ -40,7 +40,13 @@ export default async function ProductPage({
         </ErrorBoundary>
         <div>
           <h1 className="mb-1 text-2xl font-bold">{product.title}</h1>
-          <p className="mb-4 text-sm text-muted-foreground capitalize">{product.category}</p>
+          <p className="text-sm text-muted-foreground capitalize">{product.category}</p>
+          {product.sellerName && (
+            <p className="mb-4 mt-1 text-sm">
+              Sold by <span className="font-medium">{product.sellerName}</span>
+              {product.sellerLocation ? ` · ${product.sellerLocation}` : ''}
+            </p>
+          )}
           <ErrorBoundary>
             <ProductDetailPanel product={product} />
           </ErrorBoundary>
