@@ -74,7 +74,7 @@ export function AddToCartControl({
       >
         <Minus className="size-4" />
       </button>
-      <span className="min-w-9 px-1 text-center text-sm font-semibold tabular-nums" aria-live="polite">
+      <span className="flex-1 px-1 text-center text-sm font-semibold tabular-nums" aria-live="polite">
         {inCart.quantity}
       </span>
       <button

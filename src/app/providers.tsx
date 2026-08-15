@@ -9,6 +9,7 @@ import { AuthBootstrap } from '@/features/auth/auth-bootstrap'
 import { FirstVisitBootstrap } from '@/features/promo/first-visit-bootstrap'
 import { CartPersistor } from '@/features/cart/cart-persistor'
 import { CartDrawer } from '@/features/cart/cart-drawer'
+import { ConfirmProvider } from '@/components/ui/confirm-dialog'
 import { Toaster } from '@/components/ui/sonner'
 
 export interface ProvidersProps {
@@ -26,8 +27,10 @@ export function Providers({ children }: ProvidersProps): ReactNode {
         <AuthBootstrap />
         <FirstVisitBootstrap />
         <CartPersistor />
-        {children}
-        <CartDrawer />
+        <ConfirmProvider>
+          {children}
+          <CartDrawer />
+        </ConfirmProvider>
         <Toaster />
       </QueryClientProvider>
     </Provider>

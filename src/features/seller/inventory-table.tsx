@@ -15,6 +15,7 @@ import {
 } from '@tanstack/react-table'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { ErrorBoundary } from '@/components/error-boundary'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { productStatus, type ProductStatus } from '@/lib/seller-status'
 import { fetchSellerProducts, updateSellerProduct, deleteSellerProduct } from './seller-api'
 import { StatusBadge } from './status-badge'
@@ -35,6 +36,7 @@ function PriceCell({ product }: { product: SellerProduct }): ReactNode {
 
 function RowActions({ product }: { product: SellerProduct }): ReactNode {
   const queryClient = useQueryClient()
+  const confirm = useConfirm()
   const [busy, setBusy] = useState(false)
   const [addQty, setAddQty] = useState('')
 
@@ -56,7 +58,13 @@ function RowActions({ product }: { product: SellerProduct }): ReactNode {
   }
 
   async function onDelete(): Promise<void> {
-    if (!window.confirm(`Delete "${product.title}"? This removes it from your storefront.`)) return
+    const ok = await confirm({
+      title: 'Delete this product?',
+      description: `“${product.title}” will be removed from your storefront.`,
+      confirmLabel: 'Delete',
+      destructive: true,
+    })
+    if (!ok) return
     setBusy(true)
     try {
       await deleteSellerProduct(product.id)

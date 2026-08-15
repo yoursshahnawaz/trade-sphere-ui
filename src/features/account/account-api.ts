@@ -36,6 +36,16 @@ export async function addAddressReq(a: Address): Promise<Address[]> {
   return addressesRes.parse(await res.json()).addresses
 }
 
+export async function updateAddressReq(index: number, a: Address): Promise<Address[]> {
+  const res = await fetch(`/api/addresses?index=${index}`, {
+    method: 'PUT',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(a),
+  })
+  if (!res.ok) throw new Error('Failed to update address')
+  return addressesRes.parse(await res.json()).addresses
+}
+
 export async function deleteAddressReq(index: number): Promise<Address[]> {
   const res = await fetch(`/api/addresses?index=${index}`, { method: 'DELETE' })
   if (!res.ok) throw new Error('Failed to delete address')

@@ -5,16 +5,19 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { Plus, Trash2 } from 'lucide-react'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Skeleton } from '@/components/ui/skeleton'
+import { useConfirm } from '@/components/ui/confirm-dialog'
 import { addressSchema, type Address } from '@/lib/schemas/address-schema'
 import { AddressFields } from '@/features/checkout/address-fields'
-import { fetchAddresses, addAddressReq, deleteAddressReq } from './account-api'
+import { fetchAddresses, addAddressReq, updateAddressReq, deleteAddressReq } from './account-api'
 
 export function AddressManager(): ReactNode {
   const queryClient = useQueryClient()
+  const confirm = useConfirm()
   const { data, isLoading } = useQuery({ queryKey: ['addresses'], queryFn: fetchAddresses })
-  const [adding, setAdding] = useState(false)
+  const [editingIndex, setEditingIndex] = useState<number | null>(null)
+  const [formOpen, setFormOpen] = useState(false)
   const addresses = data ?? []
 
   const {
@@ -24,19 +27,42 @@ export function AddressManager(): ReactNode {
     formState: { errors, isSubmitting },
   } = useForm<Address>({ resolver: zodResolver(addressSchema), defaultValues: { country: 'India' } })
 
-  async function onAdd(a: Address): Promise<void> {
+  function openAdd(): void {
+    setEditingIndex(null)
+    reset({ country: 'India' })
+    setFormOpen(true)
+  }
+  function openEdit(index: number): void {
+    setEditingIndex(index)
+    reset(addresses[index])
+    setFormOpen(true)
+  }
+  function closeForm(): void {
+    setFormOpen(false)
+    setEditingIndex(null)
+    reset({ country: 'India' })
+  }
+
+  async function onSubmit(a: Address): Promise<void> {
     try {
-      await addAddressReq(a)
+      if (editingIndex != null) await updateAddressReq(editingIndex, a)
+      else await addAddressReq(a)
       await queryClient.invalidateQueries({ queryKey: ['addresses'] })
-      toast.success('Address saved.')
-      reset({ country: 'India' })
-      setAdding(false)
+      toast.success(editingIndex != null ? 'Address updated.' : 'Address saved.')
+      closeForm()
     } catch {
       toast.error('Could not save the address.')
     }
   }
 
-  async function onDelete(index: number): Promise<void> {
+  async function onDelete(index: number, name: string): Promise<void> {
+    const ok = await confirm({
+      title: 'Delete this address?',
+      description: `“${name}” will be removed from your saved addresses.`,
+      confirmLabel: 'Delete',
+      destructive: true,
+    })
+    if (!ok) return
     try {
       await deleteAddressReq(index)
       await queryClient.invalidateQueries({ queryKey: ['addresses'] })
@@ -57,48 +83,52 @@ export function AddressManager(): ReactNode {
       ) : addresses.length === 0 ? (
         <p className="text-sm text-muted-foreground">No saved addresses yet.</p>
       ) : (
-        <ul className="space-y-3">
+        <ul className="grid gap-3 sm:grid-cols-2">
           {addresses.map((a, i) => (
-            <li key={i} className="flex items-start justify-between gap-3 rounded-lg border bg-card p-4 text-sm">
-              <div>
+            <li key={i} className="flex items-start justify-between gap-3 rounded-xl border bg-card p-4 text-sm shadow-sm">
+              <div className="min-w-0">
                 <p className="font-medium">{a.fullName}</p>
                 <p className="text-muted-foreground">
                   {a.line1}
-                  {a.line2 ? `, ${a.line2}` : ''}, {a.city}, {a.region} {a.postalCode}, {a.country}
+                  {a.line2 ? `, ${a.line2}` : ''}, {a.city}, {a.region} {a.postalCode}
                 </p>
               </div>
-              <button
-                type="button"
-                aria-label={`Delete address for ${a.fullName}`}
-                onClick={() => onDelete(i)}
-                className="rounded-md p-2 text-destructive transition-colors hover:bg-destructive/10"
-              >
-                <Trash2 className="size-4" />
-              </button>
+              <div className="flex shrink-0 gap-1">
+                <button
+                  type="button"
+                  aria-label={`Edit address for ${a.fullName}`}
+                  onClick={() => openEdit(i)}
+                  className="grid size-8 place-items-center rounded-md border text-foreground transition-colors hover:bg-muted"
+                >
+                  <Pencil className="size-4" />
+                </button>
+                <button
+                  type="button"
+                  aria-label={`Delete address for ${a.fullName}`}
+                  onClick={() => onDelete(i, a.fullName)}
+                  className="grid size-8 place-items-center rounded-md border border-destructive/40 text-destructive transition-colors hover:bg-destructive/10"
+                >
+                  <Trash2 className="size-4" />
+                </button>
+              </div>
             </li>
           ))}
         </ul>
       )}
 
-      {adding ? (
-        <form onSubmit={handleSubmit(onAdd)} className="space-y-4 rounded-lg border bg-card p-4" noValidate>
+      {formOpen ? (
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-4 rounded-xl border bg-card p-4" noValidate>
+          <p className="font-medium">{editingIndex != null ? 'Edit address' : 'New address'}</p>
           <AddressFields register={register} errors={errors} idPrefix="acc-addr" />
           <div className="flex gap-2">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground disabled:opacity-60"
+              className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground shadow-sm disabled:opacity-60"
             >
-              Save address
+              {editingIndex != null ? 'Save changes' : 'Save address'}
             </button>
-            <button
-              type="button"
-              onClick={() => {
-                setAdding(false)
-                reset({ country: 'India' })
-              }}
-              className="rounded-lg border px-4 py-2 text-sm font-medium"
-            >
+            <button type="button" onClick={closeForm} className="rounded-lg border px-4 py-2 text-sm font-medium">
               Cancel
             </button>
           </div>
@@ -106,7 +136,7 @@ export function AddressManager(): ReactNode {
       ) : (
         <button
           type="button"
-          onClick={() => setAdding(true)}
+          onClick={openAdd}
           className="inline-flex items-center gap-2 rounded-lg border border-dashed px-4 py-2 text-sm font-medium transition-colors hover:bg-muted"
         >
           <Plus className="size-4" /> Add a new address

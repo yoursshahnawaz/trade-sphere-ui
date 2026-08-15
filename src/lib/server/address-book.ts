@@ -14,6 +14,13 @@ export function addAddress(uid: string, address: Address): Address[] {
   return list
 }
 
+export function updateAddress(uid: string, index: number, address: Address): Address[] {
+  const list = book.get(uid) ?? []
+  if (index >= 0 && index < list.length) list[index] = address
+  book.set(uid, list)
+  return list
+}
+
 export function removeAddress(uid: string, index: number): Address[] {
   const list = book.get(uid) ?? []
   if (index >= 0 && index < list.length) list.splice(index, 1)
