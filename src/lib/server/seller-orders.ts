@@ -52,7 +52,7 @@ export function listSellerOrders(uid: string): SellerOrder[] {
     for (let j = 0; j < itemCount; j++) {
       const p = products[(h + j * 7) % products.length]
       if (!p) continue
-      items.push({ title: p.title, quantity: 1 + ((h >> (j + 1)) % 3), priceCents: effectivePriceCents(p) })
+      items.push({ title: p.title, quantity: 1 + ((h >>> (j + 1)) % 3), priceCents: effectivePriceCents(p) })
     }
     const totalCents = items.reduce((n, it) => n + it.priceCents * it.quantity, 0)
     orders.push({
