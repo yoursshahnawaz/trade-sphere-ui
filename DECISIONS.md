@@ -93,3 +93,23 @@ Short records of non-obvious engineering choices: **what** was decided, the **al
 - **Decision:** Place the order via a plain `POST /api/orders` and render the confirmation page as a **server component** reading the order store directly. Orders don't enter the Query cache in Phase 4, and order-cache teardown on logout is deferred (there's no order Query to invalidate).
 - **Why:** The funnel is server-authoritative and confirmation is a one-shot server render — a client order Query adds no value yet. Revisit if an order-history list is added.
 - **Security notes:** order line items + totals are computed from the **server cart** (never trusted from the client body); only `{ method, cardLast4 }` is sent/stored (no full PAN); `GET /api/orders/[id]` enforces `order.uid === session.sub` (no IDOR).
+
+---
+
+## Phase 5 — Seller portal
+
+### D16 — Deterministic analytics (no `Math.random` / no `Date.now`)
+- **Alternatives:** Randomized demo data; a real time series anchored to the current date.
+- **Decision:** `getSellerAnalytics(uid)` derives every value from an FNV-1a hash of the uid + a fixed index, with **static `['Jan'..'Dec']` month labels**. `totalSalesCents` is exactly the sum of the revenue series.
+- **Why:** Same input → identical output regardless of wall-clock, so the data is stable across a page render and its client re-fetch, and unit tests can assert exact values. Date-relative labels would make snapshots flaky (the task explicitly warned against `Date.now`-dependent output).
+
+### D17 — Onboarding images are preview-only; store assigns a placeholder URL
+- **Alternatives:** Upload blobs to real storage; submit the `blob:` object URL as `imageUrl`.
+- **Decision:** The drag-and-drop uploader renders local `URL.createObjectURL` previews (revoked on removal + unmount) but **never submits files**. `imageUrl` is **optional** in `sellerProductInputSchema`; `addSellerProduct` defaults it to a deterministic `picsum` URL derived from the new product id.
+- **Why:** The mock BFF has no blob storage, and a `blob:` URL is ephemeral (invalid after reload) so it can't be persisted. Making `imageUrl` server-defaulted means a client can never send a `blob:` URL or omit a required field — drafts with zero images still validate.
+
+### D18 — Pin `@tanstack/react-table` to `^8`
+- **Alternatives:** Install the bare `latest`.
+- **Decision:** Pin `@tanstack/react-table@^8` (resolves to 8.21.3).
+- **Why:** npm `latest` now points at v9 (9.1.x), which has a different API surface. Pinning `^8` keeps the documented v8 hooks (`getCoreRowModel()` factories, `flexRender`, `getIsSorted()` → `aria-sort`) the inventory table is built on.
+- **Notes:** `useReactTable` returns non-memoizable functions, so this one component opts out of the React Compiler (a documented, expected trade-off) via a single `eslint-disable`. API routes enforce their own **401 (no session) / 403 (wrong role)** distinction (`requireSeller`), not just the proxy gate. The portal lives in a `(portal)` route group so its nav layout doesn't wrap the public `/seller/register`.
