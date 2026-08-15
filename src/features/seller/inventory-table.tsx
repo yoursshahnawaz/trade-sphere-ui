@@ -13,6 +13,7 @@ import {
   type SortingState,
   type ColumnDef,
 } from '@tanstack/react-table'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { productStatus, type ProductStatus } from '@/lib/seller-status'
 import { fetchSellerProducts, updateSellerProduct, deleteSellerProduct } from './seller-api'
@@ -80,22 +81,32 @@ function RowActions({ product }: { product: SellerProduct }): ReactNode {
           value={addQty}
           onChange={(e) => setAddQty(e.target.value)}
           placeholder="+ qty"
-          className="w-16 rounded-md border border-foreground/15 px-2 py-1 text-sm"
+          className="w-14 rounded-md border border-foreground/15 px-2 py-1 text-sm"
         />
-        <button type="submit" disabled={busy || !addQty} className="rounded-md border px-2 py-1 text-xs disabled:opacity-50">
-          Add
+        <button
+          type="submit"
+          aria-label={`Add stock to ${product.title}`}
+          disabled={busy || !addQty}
+          className="grid size-8 place-items-center rounded-md border text-foreground transition-colors hover:bg-muted disabled:opacity-50"
+        >
+          <Plus className="size-4" />
         </button>
       </form>
-      <Link href={`/seller/products/${product.id}/edit`} className="rounded-md border px-2 py-1 text-xs">
-        Edit
+      <Link
+        href={`/seller/products/${product.id}/edit`}
+        aria-label={`Edit ${product.title}`}
+        className="grid size-8 place-items-center rounded-md border text-foreground transition-colors hover:bg-muted"
+      >
+        <Pencil className="size-4" />
       </Link>
       <button
         type="button"
+        aria-label={`Delete ${product.title}`}
         onClick={onDelete}
         disabled={busy}
-        className="rounded-md border border-destructive/40 px-2 py-1 text-xs text-destructive disabled:opacity-50"
+        className="grid size-8 place-items-center rounded-md border border-destructive/40 text-destructive transition-colors hover:bg-destructive/10 disabled:opacity-50"
       >
-        Delete
+        <Trash2 className="size-4" />
       </button>
     </div>
   )
