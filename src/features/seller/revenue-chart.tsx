@@ -8,7 +8,9 @@ interface RevenuePoint {
   revenue: number // cents
 }
 
-const dollars = (cents: number): string => `$${Math.round(cents / 100).toLocaleString()}`
+import { formatINR } from '@/lib/money'
+
+const dollars = (cents: number): string => formatINR(cents)
 
 export function RevenueChart({ data }: { data: RevenuePoint[] }): ReactNode {
   return (

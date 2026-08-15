@@ -18,8 +18,9 @@ import { productStatus, type ProductStatus } from '@/lib/seller-status'
 import { fetchSellerProducts, updateSellerProduct, deleteSellerProduct } from './seller-api'
 import { StatusBadge } from './status-badge'
 import type { SellerProduct } from '@/lib/schemas/seller-product-schema'
+import { formatINR } from '@/lib/money'
 
-const dollars = (cents: number): string => `$${(cents / 100).toFixed(2)}`
+const dollars = (cents: number): string => formatINR(cents)
 
 function PriceCell({ product }: { product: SellerProduct }): ReactNode {
   if (product.salePriceCents == null) return <span>{dollars(product.priceCents)}</span>

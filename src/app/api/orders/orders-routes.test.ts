@@ -51,7 +51,7 @@ describe('orders routes', () => {
     expect(res.status).toBe(201)
     const { order } = (await res.json()) as { order: { id: string; totals: { subtotalCents: number; totalCents: number } } }
     expect(order.totals.subtotalCents).toBe(3000)
-    expect(order.totals.totalCents).toBe(3740) // 3000 + 240 tax + 500 shipping
+    expect(order.totals.totalCents).toBe(8440) // 3000 + 540 GST + 4900 shipping
     expect(getCart('uid-order-test')).toHaveLength(0)
   })
 

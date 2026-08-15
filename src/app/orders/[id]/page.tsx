@@ -5,6 +5,7 @@ import { redirect, notFound } from 'next/navigation'
 import { requireSession } from '@/lib/server/http'
 import { getOrder } from '@/lib/server/order-store'
 import { OrderSummary } from '@/features/checkout/order-summary'
+import { formatINR } from '@/lib/money'
 import type { Address } from '@/lib/schemas/address-schema'
 
 export const metadata: Metadata = { title: 'Order details' }
@@ -40,7 +41,7 @@ export default async function OrderConfirmationPage({
             <span>
               {i.title} × {i.quantity}
             </span>
-            <span>${((i.priceCents * i.quantity) / 100).toFixed(2)}</span>
+            <span>{formatINR(i.priceCents * i.quantity)}</span>
           </li>
         ))}
       </ul>

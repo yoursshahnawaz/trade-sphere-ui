@@ -41,7 +41,7 @@ export function PricingStep({ defaultValues, onSave }: PricingStepProps): ReactN
   return (
     <form onSubmit={handleSubmit(submit)} className="space-y-4" noValidate>
       <div>
-        <Label htmlFor="prod-price">Price (USD)</Label>
+        <Label htmlFor="prod-price">Price (₹)</Label>
         <Input
           id="prod-price"
           type="number"

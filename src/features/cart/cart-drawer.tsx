@@ -6,6 +6,7 @@ import { Minus, Plus, Trash2 } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { setCartDrawerOpen } from '@/store/ui-slice'
 import { setQuantity, removeItem, selectCartItems, selectSubtotalCents } from './cart-slice'
+import { formatINR } from '@/lib/money'
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetFooter } from '@/components/ui/sheet'
 
 export function CartDrawer(): ReactNode {
@@ -29,9 +30,7 @@ export function CartDrawer(): ReactNode {
               <li key={item.productId} className="flex items-center gap-3">
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm font-medium">{item.title}</p>
-                  <p className="text-xs text-muted-foreground">
-                    ${(item.priceCents / 100).toFixed(2)}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{formatINR(item.priceCents)}</p>
                 </div>
                 <div className="flex items-center gap-1">
                   <button
@@ -68,7 +67,7 @@ export function CartDrawer(): ReactNode {
         <SheetFooter>
           <p className="flex justify-between text-sm font-medium" aria-live="polite">
             <span>Subtotal</span>
-            <span>${(subtotal / 100).toFixed(2)}</span>
+            <span>{formatINR(subtotal)}</span>
           </p>
           <Link
             href="/checkout"

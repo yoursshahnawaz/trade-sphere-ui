@@ -5,8 +5,9 @@ import { redirect, notFound } from 'next/navigation'
 import { requireSession } from '@/lib/server/http'
 import { getSellerOrder } from '@/lib/server/seller-orders'
 import { OrderStatusBadge } from '@/features/seller/order-status-badge'
+import { formatINR } from '@/lib/money'
 
-const money = (c: number): string => `$${(c / 100).toFixed(2)}`
+const money = (c: number): string => formatINR(c)
 
 export const metadata: Metadata = { title: 'Order details' }
 

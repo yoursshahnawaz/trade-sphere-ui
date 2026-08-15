@@ -147,7 +147,7 @@ export function EditProductForm({ id }: { id: string }): ReactNode {
 
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <Label htmlFor="edit-price">Price (USD)</Label>
+          <Label htmlFor="edit-price">Price (₹)</Label>
           <Input
             id="edit-price"
             type="number"
@@ -159,7 +159,7 @@ export function EditProductForm({ id }: { id: string }): ReactNode {
           <FieldError name="edit-price" message={errors.priceDollars?.message} />
         </div>
         <div>
-          <Label htmlFor="edit-sale">Offer / sale price (USD, optional)</Label>
+          <Label htmlFor="edit-sale">Offer / sale price (₹, optional)</Label>
           <Input
             id="edit-sale"
             type="number"

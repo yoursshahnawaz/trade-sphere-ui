@@ -7,6 +7,7 @@ import { toast } from 'sonner'
 import { useAppDispatch } from '@/store/hooks'
 import { addToCart } from '@/features/cart/cart-thunks'
 import { effectivePriceCents } from '@/lib/product-price'
+import { formatINR } from '@/lib/money'
 import type { Product, CartLine } from '@/types'
 
 function lineFromProduct(p: Product): CartLine {
@@ -51,11 +52,11 @@ export function ProductCard({ product }: ProductCardProps): ReactNode {
       </Link>
       {product.salePriceCents != null ? (
         <p className="text-sm">
-          <span className="font-medium text-foreground">${(product.salePriceCents / 100).toFixed(2)}</span>{' '}
-          <span className="text-muted-foreground line-through">${(product.priceCents / 100).toFixed(2)}</span>
+          <span className="font-semibold text-foreground">{formatINR(product.salePriceCents)}</span>{' '}
+          <span className="text-muted-foreground line-through">{formatINR(product.priceCents)}</span>
         </p>
       ) : (
-        <p className="text-sm text-muted-foreground">${(product.priceCents / 100).toFixed(2)}</p>
+        <p className="text-sm font-semibold text-foreground">{formatINR(product.priceCents)}</p>
       )}
       <button
         type="button"

@@ -5,11 +5,12 @@ import { requireSession } from '@/lib/server/http'
 import { getSellerAnalytics, listSellerProducts } from '@/lib/server/seller-store'
 import { countActiveOrders } from '@/lib/server/seller-orders'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
+import { formatINR } from '@/lib/money'
 import { RevenueChart } from '@/features/seller/revenue-chart'
 import { TopProductsChart } from '@/features/seller/top-products-chart'
 
-const money = (cents: number): string => `$${Math.round(cents / 100).toLocaleString()}`
-const num = (n: number): string => n.toLocaleString()
+const money = (cents: number): string => formatINR(cents)
+const num = (n: number): string => n.toLocaleString('en-IN')
 
 export const metadata: Metadata = { title: 'Seller dashboard' }
 
