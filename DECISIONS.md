@@ -183,7 +183,7 @@ Short records of non-obvious engineering choices: **what** was decided, the **al
 - **Why:** Completes the durable-data story so order history, profile, and the address book survive restarts and are consistent across instances.
 
 ### D31 — Ratings & reviews
-- **Decision:** A `reviews` table (`unique(product_id, uid)`) with an **upsert** so a buyer has exactly one, editable review per product. Only authenticated **buyers** may post (sellers can't shop, so can't review); author name is derived server-side (profile name → email local-part → "A shopper"), never trusted from the body. The product page server-renders the list + summary and refreshes via `router.refresh()` after a post; catalog cards show an aggregate star rating fetched in one batched query (`getRatingsFor`) to avoid N+1. Pure `summarize()` is unit-tested; the route is tested with the store mocked.
+- **Decision:** A `reviews` table (`unique(product_id, uid)`) with an **upsert** so a buyer has exactly one, editable review per product. Only authenticated **buyers** may post (sellers can't shop, so can't review); the public byline is the buyer's profile name or a neutral "A shopper" (never derived from the login email, and never trusted from the body). The product page server-renders the list + summary and refreshes via `router.refresh()` after a post; catalog cards show an aggregate star rating fetched in one batched query (`getRatingsFor`) to avoid N+1. Pure `summarize()` is unit-tested; the route is tested with the store mocked.
 - **Why:** Reviews are core marketplace trust signals and were an explicit polish request; the upsert keeps the demo clean (no duplicate-review spam).
 
 ### D32 — Realtime catalog + image uploads to Storage
@@ -193,3 +193,11 @@ Short records of non-obvious engineering choices: **what** was decided, the **al
 ### D33 — Empty & 404 states
 - **Decision:** A shared `EmptyState` primitive (icon chip + title + line + optional CTA) powers the empty cart, empty orders, and no-results catalog screens; a branded `not-found.tsx` replaces the default 404. The existing design system (D25) is reused rather than re-themed.
 - **Why:** Empty and error surfaces were the last unpolished screens; a single primitive keeps them consistent without a broad redesign.
+
+### D34 — User roles → Postgres (auth persistence bug fix)
+- **Decision:** Moved the `uid → role` account record from an in-memory `Map` to a Postgres `users` table (the one store Phase 9 had missed). `upsertUser` uses `INSERT … ON CONFLICT DO NOTHING`, so a new account defaults to `buyer` and an existing account **never** has its role downgraded on re-login. Seller registration also upserts the `sellers` table so the storefront name persists. Regression test added: "a seller who logs back in via /session keeps the seller role."
+- **Why:** The in-memory map was wiped on every server restart/Turbopack reload, so a registered seller silently became a buyer on their next login. Postgres makes the role durable — the correct completion of the D29 persistence story.
+
+### D35 — Curated home; `/products` is the browse-all catalog
+- **Decision:** Home (`/`) and `/products` previously rendered the identical full catalog. Home is now a **curated landing** — promo carousel, shop-by-category chips (→ `/products?category=…`), recently-viewed, top-rated and deals rails, and a browse-all CTA — while the full searchable/filterable catalog lives only on `/products`. `CatalogSection` now filters against the current pathname (was hard-coded to `/`). Recently-viewed uses `localStorage` (a UX convenience, not session data) read via `useSyncExternalStore`.
+- **Why:** Two identical catalog pages was redundant; a curated home gives discovery a distinct purpose from browse-all, matching standard marketplace IA.

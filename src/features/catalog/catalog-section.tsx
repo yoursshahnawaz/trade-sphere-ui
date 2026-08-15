@@ -1,7 +1,7 @@
 'use client'
 
 import { useState, type ReactNode } from 'react'
-import { useRouter, useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams, usePathname } from 'next/navigation'
 import { PackageSearch, SlidersHorizontal } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { EmptyState } from '@/components/ui/empty-state'
@@ -19,6 +19,7 @@ import { CatalogFilterBar } from './catalog-filters'
 export function CatalogSection(): ReactNode {
   // Category is URL-driven so promo deep-links (?category=…) reactively filter.
   const router = useRouter()
+  const pathname = usePathname()
   const searchParams = useSearchParams()
   const category = searchParams.get('category')
   const setCategory = (value: string | null): void => {
@@ -26,7 +27,7 @@ export function CatalogSection(): ReactNode {
     if (value) params.set('category', value)
     else params.delete('category')
     const qs = params.toString()
-    router.replace(qs ? `/?${qs}` : '/', { scroll: false })
+    router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false })
   }
 
   const [q, setQ] = useState('')

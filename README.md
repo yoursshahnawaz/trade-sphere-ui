@@ -54,7 +54,7 @@ Create a Supabase project, then run [`supabase/schema.sql`](./supabase/schema.sq
 - **App Router** (`src/app`) — pages + route handlers. One `<main>` landmark lives in the root layout.
 - **Feature folders** (`src/features/*`) — `auth`, `cart`, `catalog`, `promo`, `checkout`, `seller`; each owns its components, hooks, slice, and API seam.
 - **BFF over Supabase Postgres** — route handlers (`src/app/api/*`) call server stores (`src/lib/server/*`) that read/write Postgres with the **service-role** key (bypasses RLS; the BFF enforces per-uid scoping). The client sends only ids/quantities and the server re-derives price/stock. RLS exposes only public catalog data (active products, seller info) to the anon key; reviews/orders/addresses/profiles are service-role only.
-- **Unified catalog + realtime** — the buyer storefront is every seller's *active* product listing; a new/edited listing appears to buyers **live** via a Supabase realtime subscription (anon client) that invalidates the catalog query. Sale price is a single `effectivePriceCents()` used by display and billing. Seller-uploaded images go to Supabase **Storage**.
+- **Curated home + browse-all catalog** — home (`/`) is a curated landing (promo, shop-by-category, recently-viewed, top-rated, deals); the full searchable/filterable catalog lives on `/products`. Both draw from every seller's *active* listing, and a new/edited listing appears to buyers **live** via a Supabase realtime subscription (anon client) that invalidates the catalog query. Sale price is a single `effectivePriceCents()` used by display and billing. Seller-uploaded images go to Supabase **Storage**.
 - **Schemas** (`src/lib/schemas/*`) — Zod, types inferred, shared across client and server.
 
 ## Auth model

@@ -71,7 +71,7 @@ export function Footer(): ReactNode {
       </div>
       <div className="border-t">
         <p className="mx-auto max-w-6xl px-4 py-4 text-xs text-muted-foreground">
-          © 2026 Trade-Sphere. Prices in ₹, inclusive of applicable taxes.
+          © 2026 Trade-Sphere.
         </p>
       </div>
     </footer>

@@ -60,3 +60,34 @@ export async function listCategories(): Promise<string[]> {
   const rows = (data ?? []) as Array<Pick<ProductRow, 'category'>>
   return [...new Set(rows.map((r) => r.category))].sort()
 }
+
+// Curated rails for the home page.
+export async function getOnSaleProducts(limit: number): Promise<Product[]> {
+  const { data } = await getDb()
+    .from('products')
+    .select('*')
+    .eq('status', 'active')
+    .not('sale_price_cents', 'is', null)
+    .order('created_at', { ascending: false })
+    .limit(limit)
+  const rows = (data ?? []) as ProductRow[]
+  const [sellers, ratings] = await Promise.all([
+    getSellersMap(rows.map((r) => r.seller_uid)),
+    getRatingsFor(rows.map((r) => r.id)),
+  ])
+  return rows.map((r) => toProduct(r, sellers, ratings.get(r.id)))
+}
+
+export async function getTopRatedProducts(limit: number): Promise<Product[]> {
+  const { data } = await getDb().from('products').select('*').eq('status', 'active')
+  const rows = (data ?? []) as ProductRow[]
+  const [sellers, ratings] = await Promise.all([
+    getSellersMap(rows.map((r) => r.seller_uid)),
+    getRatingsFor(rows.map((r) => r.id)),
+  ])
+  return rows
+    .map((r) => toProduct(r, sellers, ratings.get(r.id)))
+    .filter((p) => (p.ratingCount ?? 0) > 0)
+    .sort((a, b) => (b.ratingAverage ?? 0) - (a.ratingAverage ?? 0))
+    .slice(0, limit)
+}

@@ -6,6 +6,7 @@ import { listReviews, getRatingSummary } from '@/lib/server/review-store'
 import { requireSession } from '@/lib/server/http'
 import { ProductGallery } from '@/features/catalog/product-gallery'
 import { ProductDetailPanel } from '@/features/catalog/product-detail-panel'
+import { RecordRecentlyViewed } from '@/features/catalog/record-recently-viewed'
 import { StarRating } from '@/features/reviews/star-rating'
 import { ReviewSection } from '@/features/reviews/review-section'
 import { ErrorBoundary } from '@/components/error-boundary'
@@ -45,6 +46,7 @@ export default async function ProductPage({
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
+      <RecordRecentlyViewed id={id} />
       <div className="grid gap-8 md:grid-cols-2">
         <ErrorBoundary>
           <ProductGallery images={gallery} alt={product.title} />
