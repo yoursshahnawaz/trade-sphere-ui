@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { redirect } from 'next/navigation'
 import { requireSession } from '@/lib/server/http'
 import { getSellerAnalytics, listSellerProducts } from '@/lib/server/seller-store'
+import { countActiveOrders } from '@/lib/server/seller-orders'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { RevenueChart } from '@/features/seller/revenue-chart'
 import { TopProductsChart } from '@/features/seller/top-products-chart'
@@ -15,10 +16,11 @@ export default async function SellerDashboardPage(): Promise<ReactNode> {
 
   const { kpis, revenueSeries, topProducts } = getSellerAnalytics(session.sub)
   const productCount = listSellerProducts(session.sub).length
+  const activeOrders = countActiveOrders(session.sub)
 
   const cards = [
     { label: 'Total sales', value: money(kpis.totalSalesCents) },
-    { label: 'Active orders', value: num(kpis.activeOrders) },
+    { label: 'Active orders', value: num(activeOrders) },
     { label: 'Storefront traffic', value: num(kpis.traffic) },
     { label: 'Products listed', value: num(productCount) },
   ]
