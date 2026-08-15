@@ -14,9 +14,9 @@ export interface Promo {
 export const promos: Promo[] = [
   {
     id: 'hero',
-    title: 'Summer Tech Sale',
+    title: 'Summer Audio Sale',
     subtitle: 'Up to 30% off top gear',
-    href: '/?category=audio',
+    href: '/offers/summer-audio',
     img: 'https://picsum.photos/seed/promo-hero/1600/600',
     audience: 'all',
   },
@@ -38,9 +38,9 @@ export const promos: Promo[] = [
   },
   {
     id: 'member',
-    title: 'Your member deals',
+    title: 'Gaming Fest',
     subtitle: 'Handpicked for you',
-    href: '/?category=gaming',
+    href: '/offers/gaming-fest',
     img: 'https://picsum.photos/seed/promo-member/1600/600',
     audience: 'auth',
   },
@@ -48,7 +48,7 @@ export const promos: Promo[] = [
     id: 'wearables',
     title: 'New wearables',
     subtitle: 'Track more, do more',
-    href: '/?category=wearables',
+    href: '/offers/new-wearables',
     img: 'https://picsum.photos/seed/promo-wear/1600/600',
     audience: 'all',
   },

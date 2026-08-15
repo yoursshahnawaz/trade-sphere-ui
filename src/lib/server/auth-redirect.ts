@@ -17,7 +17,8 @@ export function decideAuth(
   const role = session?.role
   const isSellerArea = pathname.startsWith('/seller')
   const isBuyerAuth = pathname === '/checkout' || pathname.startsWith('/orders')
-  const isPublicShopping = pathname === '/' || pathname.startsWith('/products')
+  const isPublicShopping =
+    pathname === '/' || pathname.startsWith('/products') || pathname.startsWith('/offers')
 
   // Seller portal: sellers only.
   if (isSellerArea) {
