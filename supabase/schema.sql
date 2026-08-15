@@ -29,6 +29,16 @@ create table if not exists public.profiles (
   contact text not null default ''
 );
 
+-- Durable account record (uid -> role). Written at login/registration so a
+-- seller's role survives restarts (buyer is the default for new accounts).
+create table if not exists public.users (
+  uid text primary key,
+  email text,
+  role text not null default 'buyer' check (role in ('buyer','seller')),
+  store_name text,
+  created_at timestamptz not null default now()
+);
+
 -- Product listings
 create table if not exists public.products (
   id text primary key,
@@ -108,10 +118,11 @@ create index if not exists reviews_product_id_idx on public.reviews (product_id)
 -- Enable RLS on every table. Writes + private reads run as the service role
 -- (bypasses RLS). Only public catalog data is anon-readable — active products
 -- (also needed for realtime) and seller storefront info — so the buyer storefront
--- and realtime work with the anon key. Reviews, orders, addresses, and profiles
--- are deny-by-default for anon (service-role only).
+-- and realtime work with the anon key. Users, reviews, orders, addresses, and
+-- profiles are deny-by-default for anon (service-role only).
 alter table public.sellers enable row level security;
 alter table public.profiles enable row level security;
+alter table public.users enable row level security;
 alter table public.products enable row level security;
 alter table public.addresses enable row level security;
 alter table public.orders enable row level security;

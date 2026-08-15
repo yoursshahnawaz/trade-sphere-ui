@@ -2,6 +2,17 @@
 
 import type { ReactNode } from 'react'
 import { useQuery } from '@tanstack/react-query'
+import { ChevronDown } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuRadioGroup,
+  DropdownMenuRadioItem,
+} from '@/components/ui/dropdown-menu'
+
+const titleCase = (s: string): string => s.charAt(0).toUpperCase() + s.slice(1)
 
 export interface CatalogFilterBarProps {
   category: string | null
@@ -39,22 +50,31 @@ export function CatalogFilterBar(props: CatalogFilterBarProps): ReactNode {
   return (
     <div className="flex flex-col gap-5">
       <div className="flex flex-col gap-1.5">
-        <label htmlFor="filter-category" className="text-sm font-medium">
+        <span className="text-sm font-medium" id="filter-category-label">
           Category
-        </label>
-        <select
-          id="filter-category"
-          value={category ?? ''}
-          onChange={(e) => onCategory(e.target.value || null)}
-          className={CONTROL}
-        >
-          <option value="">All categories</option>
-          {categories.map((c) => (
-            <option key={c} value={c} className="capitalize">
-              {c}
-            </option>
-          ))}
-        </select>
+        </span>
+        <DropdownMenu>
+          <DropdownMenuTrigger
+            aria-labelledby="filter-category-label"
+            className={cn(CONTROL, 'flex items-center justify-between gap-2 text-left')}
+          >
+            <span className="truncate">{category ? titleCase(category) : 'All categories'}</span>
+            <ChevronDown className="size-4 shrink-0 opacity-60" aria-hidden="true" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent align="start">
+            <DropdownMenuRadioGroup
+              value={category ?? ''}
+              onValueChange={(value) => onCategory(value || null)}
+            >
+              <DropdownMenuRadioItem value="">All categories</DropdownMenuRadioItem>
+              {categories.map((c) => (
+                <DropdownMenuRadioItem key={c} value={c}>
+                  {titleCase(c)}
+                </DropdownMenuRadioItem>
+              ))}
+            </DropdownMenuRadioGroup>
+          </DropdownMenuContent>
+        </DropdownMenu>
       </div>
 
       <div className="flex flex-col gap-1.5">

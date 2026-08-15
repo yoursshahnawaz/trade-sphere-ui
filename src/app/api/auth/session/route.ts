@@ -25,7 +25,7 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'invalid token' }, { status: 401 })
   }
 
-  const stored = upsertUser({ uid: decoded.sub, email: decoded.email })
+  const stored = await upsertUser({ uid: decoded.sub, email: decoded.email })
   const user: SessionUser = { uid: stored.uid, email: stored.email, role: stored.role }
   await setSessionCookie(user)
   return NextResponse.json({ user }, { status: 200 })

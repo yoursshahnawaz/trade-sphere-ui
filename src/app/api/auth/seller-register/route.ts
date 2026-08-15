@@ -2,6 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server'
 import { z } from 'zod'
 import { verifyFirebaseIdToken } from '@/lib/server/firebase-verify'
 import { upsertUser } from '@/lib/server/user-store'
+import { setSellerInfo } from '@/lib/server/sellers'
 import { isSameOrigin, setSessionCookie } from '@/lib/server/http'
 import type { SessionUser } from '@/types'
 
@@ -28,12 +29,17 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: 'invalid token' }, { status: 401 })
   }
 
-  const stored = upsertUser({
+  const stored = await upsertUser({
     uid: decoded.sub,
     email: decoded.email,
     role: 'seller',
     storeName: parsed.data.storeName,
   })
+  // Persist the storefront name so buyers see it immediately (seller keeps their
+  // role even if they later hit this again; setSellerInfo upserts by uid).
+  if (stored.role === 'seller') {
+    await setSellerInfo(stored.uid, { name: parsed.data.storeName, location: 'India' })
+  }
   const user: SessionUser = { uid: stored.uid, email: stored.email, role: stored.role }
   await setSessionCookie(user)
   return NextResponse.json({ user }, { status: 200 })
