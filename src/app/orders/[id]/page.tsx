@@ -5,6 +5,7 @@ import { redirect, notFound } from 'next/navigation'
 import { requireSession } from '@/lib/server/http'
 import { getOrder } from '@/lib/server/order-store'
 import { OrderSummary } from '@/features/checkout/order-summary'
+import { OrderTimeline } from '@/features/orders/order-timeline'
 import { formatINR } from '@/lib/money'
 import type { Address } from '@/lib/schemas/address-schema'
 
@@ -28,14 +29,24 @@ export default async function OrderConfirmationPage({
 
   return (
     <div className="mx-auto max-w-2xl px-4 py-8">
-      <div className="mb-6 rounded-md border border-green-500/40 bg-green-500/5 p-4">
+      <div className="mb-6 rounded-xl border border-emerald-500/40 bg-emerald-500/5 p-4">
         <h1 className="text-xl font-bold">Order confirmed 🎉</h1>
         <p className="text-sm text-muted-foreground">
-          Order #{order.id.slice(0, 8)} · {new Date(order.createdAt).toLocaleString()}
+          Order #{order.id.slice(0, 8)} · {new Date(order.createdAt).toLocaleString('en-IN')}
         </p>
       </div>
 
-      <ul className="mb-4 divide-y rounded-md border">
+      <section aria-labelledby="status-heading" className="mb-6 rounded-xl border bg-card p-5">
+        <h2 id="status-heading" className="mb-4 text-sm font-semibold">
+          Order status
+        </h2>
+        <OrderTimeline status="Processing" />
+        <p className="mt-4 text-xs text-muted-foreground">
+          Placed just now · estimated delivery in 3–5 days.
+        </p>
+      </section>
+
+      <ul className="mb-4 divide-y rounded-xl border">
         {order.items.map((i) => (
           <li key={i.productId} className="flex justify-between p-3 text-sm">
             <span>

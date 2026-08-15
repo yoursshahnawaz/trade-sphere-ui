@@ -77,9 +77,11 @@ export function Header(): ReactNode {
               >
                 <User className="size-5" />
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
+              <DropdownMenuContent align="end" className="w-60 max-w-[calc(100vw-1.5rem)]">
                 <DropdownMenuGroup>
-                  <DropdownMenuLabel>{user.email ?? 'Signed in'}</DropdownMenuLabel>
+                  <DropdownMenuLabel className="truncate text-muted-foreground">
+                    {user.email ?? 'Signed in'}
+                  </DropdownMenuLabel>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => router.push('/account')}>My profile</DropdownMenuItem>

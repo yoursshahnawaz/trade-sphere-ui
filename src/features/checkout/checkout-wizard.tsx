@@ -12,6 +12,7 @@ import { ShippingStep } from './shipping-step'
 import { BillingStep } from './billing-step'
 import { ReviewStep } from './review-step'
 import { placeOrder } from './checkout-api'
+import { Skeleton } from '@/components/ui/skeleton'
 
 const STEP_TITLES: Record<Step, string> = {
   cart: 'Cart',
@@ -32,11 +33,33 @@ export function CheckoutWizard(): ReactNode {
     headingRef.current?.focus()
   }, [state.step])
 
+  // While the order is being placed (and the cart is cleared), show a placing
+  // screen so the empty-cart view never flashes before the confirmation page.
+  if (isPlacing) {
+    return (
+      <div className="mx-auto max-w-2xl px-4 py-12">
+        <div className="flex items-center gap-3">
+          <span
+            className="size-5 animate-spin rounded-full border-2 border-primary border-t-transparent"
+            aria-hidden="true"
+          />
+          <p className="text-sm font-medium" role="status">
+            Placing your order…
+          </p>
+        </div>
+        <div className="mt-6 space-y-3">
+          <Skeleton className="h-24 w-full rounded-xl" />
+          <Skeleton className="h-32 w-full rounded-xl" />
+        </div>
+      </div>
+    )
+  }
+
   if (items.length === 0) {
     return (
       <div className="mx-auto max-w-xl px-4 py-12 text-center">
         <p className="mb-4 text-muted-foreground">Your cart is empty.</p>
-        <Link href="/" className="rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground">
+        <Link href="/" className="rounded-lg bg-primary px-4 py-2 text-sm font-semibold text-primary-foreground">
           Continue shopping
         </Link>
       </div>
