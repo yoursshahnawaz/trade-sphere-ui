@@ -24,4 +24,16 @@ describe('decideAuth', () => {
   it('allows an authenticated buyer into /checkout', () => {
     expect(decideAuth('/checkout', '', { role: 'buyer' })).toEqual({ type: 'next' })
   })
+
+  it('allows guests and buyers to browse the storefront', () => {
+    expect(decideAuth('/', '', null)).toEqual({ type: 'next' })
+    expect(decideAuth('/products/p1', '', { role: 'buyer' })).toEqual({ type: 'next' })
+  })
+
+  it('redirects a seller away from buyer shopping routes to their portal', () => {
+    expect(decideAuth('/', '', { role: 'seller' })).toEqual({ type: 'redirect', to: '/seller' })
+    expect(decideAuth('/products/p1', '', { role: 'seller' })).toEqual({ type: 'redirect', to: '/seller' })
+    expect(decideAuth('/checkout', '', { role: 'seller' })).toEqual({ type: 'redirect', to: '/seller' })
+    expect(decideAuth('/orders', '', { role: 'seller' })).toEqual({ type: 'redirect', to: '/seller' })
+  })
 })

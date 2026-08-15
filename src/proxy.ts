@@ -26,4 +26,6 @@ export async function proxy(request: NextRequest): Promise<NextResponse> {
   return NextResponse.next()
 }
 
-export const config = { matcher: ['/seller/:path*', '/checkout', '/orders', '/orders/:path*'] }
+export const config = {
+  matcher: ['/', '/products/:path*', '/seller/:path*', '/checkout', '/orders', '/orders/:path*'],
+}

@@ -36,7 +36,7 @@ export function Header(): ReactNode {
   return (
     <header className="sticky top-0 z-40 border-b bg-background/95 backdrop-blur">
       <div className="mx-auto flex h-14 max-w-6xl items-center justify-between px-4">
-        <Link href="/" className="text-lg font-bold">
+        <Link href={isSeller ? '/seller' : '/'} className="font-display text-xl font-semibold tracking-tight">
           Trade-Sphere
         </Link>
         <nav aria-label="Primary" className="flex items-center gap-2">
