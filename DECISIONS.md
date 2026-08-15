@@ -166,3 +166,14 @@ Short records of non-obvious engineering choices: **what** was decided, the **al
 ### D28 — User profiles + saved addresses + offers routes + cart stepper
 - **Decision:** A user icon menu replaces the email; `/account` manages profile (name, gender, contact) + saved addresses (add/delete). A seller's profile name becomes their storefront name shown to buyers. Offers open on dedicated `/offers` + `/offers/[id]` routes (offer info + its products). Add-to-cart becomes a quantity stepper once an item is in the cart.
 - **Why:** Direct seller feedback — richer identity, offer detail pages, and inline quantity control.
+
+---
+
+## Phase 9 — Real backend (Supabase)
+
+### D29 — Supabase Postgres as the data store; Firebase auth unchanged
+- **Alternatives:** Keep everything in-memory; switch auth to Supabase.
+- **Decision:** Provisioned a Supabase project (`trade-sphere`, ap-south-1/Mumbai). **Firebase stays the identity provider** (D9); Supabase is purely the **database**. The server accesses it with the **service-role key** (bypasses RLS; the BFF still enforces per-uid scoping), while the browser uses the **anon key** for public product/review reads + realtime. RLS: anon may read only `status='active'` products and reviews; everything else (orders/addresses/profiles) is deny-by-default for anon (service-role only) — the four `rls_enabled_no_policy` advisories are intentional.
+- **Stage 1 (this branch):** `products` (catalog + seller listings), `sellers`, seller analytics/orders (derived), and cart re-derivation now read/write Postgres — verified end-to-end (catalog loads 18 active products with seller + INR data). The in-memory seed is deleted. The Supabase client is lazily created so tests never need real creds; the MSW mock layer is fully static (decoupled from the real stores); the pure in-memory store tests are removed (their logic is now SQL) while route tests mock the stores to keep auth/validation coverage.
+- **Pending (next):** migrate `orders`, `profiles`, `addresses` to Postgres; product image uploads to Supabase **Storage**; a client **realtime** subscription so new listings appear live; then reviews (#4).
+- **Why:** Delivers real persistence + the "seller lists → buyers see it" story the brief calls for, without discarding the working Firebase auth or the BFF's authorization model.

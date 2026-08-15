@@ -12,7 +12,7 @@ export async function generateMetadata({
   params: Promise<{ id: string }>
 }): Promise<Metadata> {
   const { id } = await params
-  const product = getProduct(id)
+  const product = await getProduct(id)
   return { title: product?.title ?? 'Product' }
 }
 
@@ -22,7 +22,7 @@ export default async function ProductPage({
   params: Promise<{ id: string }>
 }): Promise<ReactNode> {
   const { id } = await params
-  const product = getProduct(id)
+  const product = await getProduct(id)
   if (!product) notFound()
 
   const gallery = [

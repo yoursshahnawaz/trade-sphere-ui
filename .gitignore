@@ -26,6 +26,7 @@
 
 # local scratch notes (not pushed)
 *.local.md
+*.local.md.bak
 
 # debug
 npm-debug.log*

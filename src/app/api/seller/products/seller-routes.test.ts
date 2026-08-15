@@ -5,6 +5,17 @@ vi.mock('@/lib/server/http', async (orig) => {
   const actual = await orig<typeof import('@/lib/server/http')>()
   return { ...actual, requireSession: vi.fn() }
 })
+vi.mock('@/lib/server/seller-store', () => ({
+  listSellerProducts: vi.fn(async () => [
+    { id: 'x', sellerUid: 'seller-route-test', title: 'Thing', category: 'home', priceCents: 100000, stock: 1, imageUrl: 'https://picsum.photos/seed/x/600/600', status: 'active' },
+  ]),
+  addSellerProduct: vi.fn(async (_uid: string, input: Record<string, unknown>) => ({
+    ...input,
+    id: 'new',
+    sellerUid: 'seller-route-test',
+    imageUrl: (input.imageUrl as string) ?? 'https://picsum.photos/seed/new/600/600',
+  })),
+}))
 
 import { GET, POST } from './route'
 import { requireSession } from '@/lib/server/http'
@@ -51,7 +62,6 @@ describe('seller products routes', () => {
 
   it('POST rejects an invalid body (non-positive price)', async () => {
     vi.mocked(requireSession).mockResolvedValueOnce(asSeller)
-    const res = await POST(post({ title: 'Widget', category: 'home', priceCents: -5, stock: 4 }))
-    expect(res.status).toBe(400)
+    expect((await POST(post({ title: 'Widget', category: 'home', priceCents: -5, stock: 4 }))).status).toBe(400)
   })
 })

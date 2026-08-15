@@ -18,9 +18,9 @@ export default async function SellerDashboardPage(): Promise<ReactNode> {
   const session = await requireSession()
   if (!session) redirect('/login?returnUrl=/seller') // defense-in-depth; proxy already gates this
 
-  const { kpis, revenueSeries, topProducts } = getSellerAnalytics(session.sub)
-  const productCount = listSellerProducts(session.sub).length
-  const activeOrders = countActiveOrders(session.sub)
+  const { kpis, revenueSeries, topProducts } = await getSellerAnalytics(session.sub)
+  const productCount = (await listSellerProducts(session.sub)).length
+  const activeOrders = await countActiveOrders(session.sub)
 
   const cards = [
     { label: 'Total sales', value: money(kpis.totalSalesCents) },

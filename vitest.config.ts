@@ -10,6 +10,9 @@ export default defineConfig({
     env: {
       SESSION_JWT_SECRET: 'test-secret-at-least-32-bytes-long-000000',
       NEXT_PUBLIC_FIREBASE_PROJECT_ID: 'demo-project',
+      NEXT_PUBLIC_SUPABASE_URL: 'http://localhost:54321',
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: 'test-anon',
+      SUPABASE_SERVICE_ROLE_KEY: 'test-service',
     },
     coverage: {
       provider: 'v8',

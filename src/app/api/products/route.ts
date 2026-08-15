@@ -14,5 +14,5 @@ export async function GET(request: Request): Promise<NextResponse> {
     inStock: sp.get('inStock') ?? undefined,
   })
   if (!parsed.success) return NextResponse.json({ error: 'invalid query' }, { status: 400 })
-  return NextResponse.json(queryProducts(parsed.data), { status: 200 })
+  return NextResponse.json(await queryProducts(parsed.data), { status: 200 })
 }

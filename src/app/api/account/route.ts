@@ -27,7 +27,8 @@ export async function PUT(request: NextRequest): Promise<NextResponse> {
   const profile = setProfile(session.sub, parsed.data)
   // A seller's name becomes their storefront name shown to buyers (realtime).
   if (session.role === 'seller') {
-    setSellerInfo(session.sub, { name: profile.name, location: getSellerInfo(session.sub).location })
+    const current = await getSellerInfo(session.sub)
+    await setSellerInfo(session.sub, { name: profile.name, location: current.location })
   }
   return NextResponse.json({ profile })
 }

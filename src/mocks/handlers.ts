@@ -1,41 +1,44 @@
 import { http, HttpResponse } from 'msw'
-import { normalizeInputs } from '@/lib/server/cart-store'
-import { mergeCarts } from '@/features/cart/cart-merge'
-import { queryProducts, getProduct, listCategories } from '@/lib/server/product-store'
 import type { CartLine } from '@/types'
 import type { Address } from '@/lib/schemas/address-schema'
 import type { SellerProduct } from '@/lib/schemas/seller-product-schema'
 
+// MSW is a TEST-only mock layer: it returns canned data and never touches the
+// real (Supabase-backed) stores, so the suite stays fast, isolated, and offline.
 type CartInputBody = { items: { productId: string; quantity: number }[] }
 let mswCart: CartLine[] = []
 let mswAddresses: Address[] = []
 let mswSellerProducts: SellerProduct[] = [
-  { id: 'sp1', sellerUid: 'msw', title: 'Wireless Earbuds Pro', category: 'audio', priceCents: 7999, stock: 24, imageUrl: 'https://picsum.photos/seed/sp1/600/600', status: 'active' },
-  { id: 'sp2', sellerUid: 'msw', title: 'Ergonomic Mouse', category: 'peripherals', priceCents: 3499, stock: 3, imageUrl: 'https://picsum.photos/seed/sp2/600/600', status: 'active' },
-  { id: 'sp6', sellerUid: 'msw', title: 'Studio Microphone', category: 'audio', priceCents: 12999, stock: 7, imageUrl: 'https://picsum.photos/seed/sp6/600/600', status: 'draft' },
+  { id: 'sp1', sellerUid: 'msw', title: 'Wireless Earbuds Pro', category: 'audio', priceCents: 799900, stock: 24, imageUrl: 'https://picsum.photos/seed/sp1/600/600', status: 'active' },
+  { id: 'sp2', sellerUid: 'msw', title: 'Ergonomic Mouse', category: 'peripherals', priceCents: 349900, stock: 3, imageUrl: 'https://picsum.photos/seed/sp2/600/600', status: 'active' },
+  { id: 'sp6', sellerUid: 'msw', title: 'Studio Microphone', category: 'audio', priceCents: 1299900, stock: 7, imageUrl: 'https://picsum.photos/seed/sp6/600/600', status: 'draft' },
 ]
+
+const CATEGORIES = ['audio', 'peripherals', 'wearables', 'home', 'gaming']
+const SAMPLE_PRODUCTS = [
+  { id: 'aud-1', title: 'Wireless Over-Ear Headphones', priceCents: 249900, stock: 8, category: 'audio', imageUrl: 'https://picsum.photos/seed/aud-1/800/800', sellerName: 'SoundWave Audio' },
+  { id: 'per-3', title: 'Ergonomic Wireless Mouse', priceCents: 149900, salePriceCents: 119900, stock: 40, category: 'peripherals', imageUrl: 'https://picsum.photos/seed/per-3/800/800', sellerName: 'Peripia Tech' },
+]
+
+function toLines(items: CartInputBody['items']): CartLine[] {
+  return items.map((i) => ({
+    productId: i.productId,
+    title: i.productId,
+    priceCents: 100000,
+    imageUrl: 'https://example.com/i.webp',
+    stock: 50,
+    quantity: i.quantity,
+  }))
+}
 
 export const handlers = [
   http.get('/api/health', () => HttpResponse.json({ status: 'ok' })),
-  http.get('/api/products', ({ request }) => {
-    const sp = new URL(request.url).searchParams
-    return HttpResponse.json(
-      queryProducts({
-        page: Number(sp.get('page') ?? '1'),
-        limit: Number(sp.get('limit') ?? '12'),
-        q: sp.get('q') ?? undefined,
-        category: sp.get('category') ?? undefined,
-        minPrice: sp.get('minPrice') ? Number(sp.get('minPrice')) : undefined,
-        maxPrice: sp.get('maxPrice') ? Number(sp.get('maxPrice')) : undefined,
-        inStock: sp.get('inStock') === 'true' ? true : undefined,
-      }),
-    )
-  }),
+  http.get('/api/products', () => HttpResponse.json({ items: SAMPLE_PRODUCTS, nextPage: null })),
   http.get('/api/products/:id', ({ params }) => {
-    const product = getProduct(String(params.id))
+    const product = SAMPLE_PRODUCTS.find((p) => p.id === params.id)
     return product ? HttpResponse.json({ product }) : new HttpResponse(null, { status: 404 })
   }),
-  http.get('/api/categories', () => HttpResponse.json({ categories: listCategories() })),
+  http.get('/api/categories', () => HttpResponse.json({ categories: CATEGORIES })),
   http.post('/api/orders', () => HttpResponse.json({ order: { id: 'order-test' } }, { status: 201 })),
   http.get('/api/addresses', () => HttpResponse.json({ addresses: mswAddresses })),
   http.post('/api/addresses', async ({ request }) => {
@@ -46,12 +49,12 @@ export const handlers = [
   http.get('/api/cart', () => HttpResponse.json({ items: mswCart })),
   http.put('/api/cart', async ({ request }) => {
     const body = (await request.json()) as CartInputBody
-    mswCart = normalizeInputs(body.items)
+    mswCart = toLines(body.items)
     return HttpResponse.json({ items: mswCart })
   }),
   http.post('/api/cart/merge', async ({ request }) => {
     const body = (await request.json()) as CartInputBody
-    mswCart = mergeCarts(mswCart, normalizeInputs(body.items))
+    mswCart = [...mswCart, ...toLines(body.items)]
     return HttpResponse.json({ items: mswCart })
   }),
   http.get('/api/seller/products', () => HttpResponse.json({ products: mswSellerProducts })),

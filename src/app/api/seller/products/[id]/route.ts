@@ -10,7 +10,7 @@ export async function GET(_request: NextRequest, { params }: Params): Promise<Ne
   const gate = await requireSeller()
   if ('status' in gate) return denySeller(gate.status)
   const { id } = await params
-  const product = getSellerProduct(gate.session.sub, id)
+  const product = await getSellerProduct(gate.session.sub, id)
   if (!product) return NextResponse.json({ error: 'not found' }, { status: 404 })
   return NextResponse.json({ product })
 }
@@ -21,7 +21,7 @@ export async function PATCH(request: NextRequest, { params }: Params): Promise<N
   if ('status' in gate) return denySeller(gate.status)
   const { id } = await params
 
-  const existing = getSellerProduct(gate.session.sub, id)
+  const existing = await getSellerProduct(gate.session.sub, id)
   if (!existing) return NextResponse.json({ error: 'not found' }, { status: 404 })
 
   let raw: unknown
@@ -43,7 +43,7 @@ export async function PATCH(request: NextRequest, { params }: Params): Promise<N
     return NextResponse.json({ error: 'sale price must be less than price' }, { status: 400 })
   }
 
-  const product = updateSellerProduct(gate.session.sub, id, patch)
+  const product = await updateSellerProduct(gate.session.sub, id, patch)
   return NextResponse.json({ product })
 }
 
@@ -52,7 +52,7 @@ export async function DELETE(request: NextRequest, { params }: Params): Promise<
   const gate = await requireSeller()
   if ('status' in gate) return denySeller(gate.status)
   const { id } = await params
-  if (!removeSellerProduct(gate.session.sub, id)) {
+  if (!(await removeSellerProduct(gate.session.sub, id))) {
     return NextResponse.json({ error: 'not found' }, { status: 404 })
   }
   return NextResponse.json({ ok: true })

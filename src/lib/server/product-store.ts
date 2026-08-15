@@ -1,62 +1,54 @@
 import type { Product } from '@/types'
 import type { ProductQuery, ProductPage } from '@/lib/schemas/product-query-schema'
-import type { SellerProduct } from '@/lib/schemas/seller-product-schema'
-import { seedProducts } from '@/mocks/seed/products'
-import { listAllSellerProducts, findSellerProductById } from './seller-store'
-import { getSellerInfo } from './sellers'
+import { getDb } from './supabase'
+import { getSellersMap, getSellerInfo, type SellerInfo } from './sellers'
+import type { ProductRow } from './db-types'
 
-function sellerToProduct(s: SellerProduct): Product {
-  const info = getSellerInfo(s.sellerUid)
+function toProduct(r: ProductRow, sellers: Map<string, SellerInfo>): Product {
+  const info = sellers.get(r.seller_uid) ?? { name: 'Independent Seller', location: 'India' }
   const p: Product = {
-    id: s.id,
-    title: s.title,
-    priceCents: s.priceCents,
-    stock: s.stock,
-    category: s.category,
-    imageUrl: s.imageUrl,
-    sellerUid: s.sellerUid,
+    id: r.id,
+    title: r.title,
+    priceCents: r.price_cents,
+    stock: r.stock,
+    category: r.category,
+    imageUrl: r.image_url,
+    sellerUid: r.seller_uid,
     sellerName: info.name,
     sellerLocation: info.location,
   }
-  if (s.salePriceCents != null) p.salePriceCents = s.salePriceCents
+  if (r.sale_price_cents != null) p.salePriceCents = r.sale_price_cents
   return p
 }
 
-// Unified marketplace catalog = the base seed (representing other sellers) plus
-// every seller's ACTIVE products. Drafts never reach the buyer.
-function catalog(): Product[] {
-  const sellerActive = listAllSellerProducts()
-    .filter((p) => p.status === 'active')
-    .map(sellerToProduct)
-  return [...seedProducts, ...sellerActive]
-}
-
-export function queryProducts(params: ProductQuery): ProductPage {
+export async function queryProducts(params: ProductQuery): Promise<ProductPage> {
   const { page, limit, q, category, minPrice, maxPrice, inStock } = params
-  let items = catalog()
-  if (q) {
-    const needle = q.toLowerCase()
-    items = items.filter((p) => p.title.toLowerCase().includes(needle))
-  }
-  if (category) items = items.filter((p) => p.category === category)
-  if (minPrice != null) items = items.filter((p) => p.priceCents >= minPrice)
-  if (maxPrice != null) items = items.filter((p) => p.priceCents <= maxPrice)
-  if (inStock) items = items.filter((p) => p.stock > 0)
+  let query = getDb().from('products').select('*', { count: 'exact' }).eq('status', 'active')
+  if (q) query = query.ilike('title', `%${q}%`)
+  if (category) query = query.eq('category', category)
+  if (minPrice != null) query = query.gte('price_cents', minPrice)
+  if (maxPrice != null) query = query.lte('price_cents', maxPrice)
+  if (inStock) query = query.gt('stock', 0)
 
-  const total = items.length
-  const start = (page - 1) * limit
-  const pageItems = items.slice(start, start + limit)
-  const end = start + pageItems.length
-  return { items: pageItems, nextPage: end < total ? page + 1 : null }
+  const from = (page - 1) * limit
+  const { data, count } = await query.order('created_at', { ascending: false }).range(from, from + limit - 1)
+  const rows = (data ?? []) as ProductRow[]
+  const sellers = await getSellersMap(rows.map((r) => r.seller_uid))
+  const items = rows.map((r) => toProduct(r, sellers))
+  const total = count ?? 0
+  return { items, nextPage: from + rows.length < total ? page + 1 : null }
 }
 
-export function getProduct(id: string): Product | undefined {
-  const seeded = seedProducts.find((p) => p.id === id)
-  if (seeded) return seeded
-  const s = findSellerProductById(id)
-  return s && s.status === 'active' ? sellerToProduct(s) : undefined
+export async function getProduct(id: string): Promise<Product | undefined> {
+  const { data } = await getDb().from('products').select('*').eq('id', id).maybeSingle()
+  const row = data as ProductRow | null
+  if (!row || row.status !== 'active') return undefined
+  const info = await getSellerInfo(row.seller_uid)
+  return toProduct(row, new Map([[row.seller_uid, info]]))
 }
 
-export function listCategories(): string[] {
-  return [...new Set(catalog().map((p) => p.category))]
+export async function listCategories(): Promise<string[]> {
+  const { data } = await getDb().from('products').select('category').eq('status', 'active')
+  const rows = (data ?? []) as Array<Pick<ProductRow, 'category'>>
+  return [...new Set(rows.map((r) => r.category))].sort()
 }
