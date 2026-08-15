@@ -145,3 +145,23 @@ Short records of non-obvious engineering choices: **what** was decided, the **al
 ### D24 — CWV enforced at code level (live Lighthouse out-of-band)
 - **Decision:** Lighthouse needs a real Chrome (not reproducible in this headless env), so CWV is enforced structurally and documented in the README: hero image is the `preload`ed LCP element (product images stay lazy), `recharts` is code-split out of buyer routes, `next/font` + fixed-height wrappers + dimension-matched skeletons prevent CLS, and per-route `metadata`/`generateMetadata` + `metadataBase` cover SEO.
 - **Why:** Honest, falsifiable, code-level guarantees beat an unrepeatable score; the live audit is a documented out-of-band step.
+
+---
+
+## Phase 7 — Marketplace UX overhaul (seller feedback)
+
+### D25 — Design system: "Bazaar, refined"
+- **Decision:** A warm Indian-marketplace aesthetic driven entirely by CSS variables — cream canvas, warm-ink text, **saffron primary**, magenta for deals, emerald for in-stock — with **Fraunces** (display) + **Manrope** (body) via `next/font`. Because every primitive (Button/Input/Card/charts) reads the tokens, re-tinting `globals.css` restyles the whole app at once. Added `Skeleton` + `Badge` primitives.
+- **Why:** The prior UI was grayscale + Geist. Centralizing colour/type in tokens delivers a cohesive, distinctive look without touching every component.
+
+### D26 — INR + India-only
+- **Decision:** All prices render as ₹ via `formatINR` (`Intl` `en-IN`, integer paise). Totals use **18% GST** + ₹49 flat shipping (free over ₹500). Addresses are **India-locked** (country fixed) with an Indian **states** dropdown and 6-digit **PIN** validation. Test fixtures updated to Indian data.
+- **Why:** The app targets an Indian audience; currency, tax, and address shape must match.
+
+### D27 — Sellers are not buyers; catalog is seller-listed (realtime)
+- **Decision:** `decideAuth` redirects a seller away from buyer shopping routes (`/`, `/products`, `/offers`, `/checkout`, `/orders`) to `/seller`. The buyer catalog is composed of seller-attributed listings (seller name + location shown on cards/detail); a real seller's new product appears to buyers immediately (shared in-memory `globalThis` store — realtime in-process).
+- **Why:** One role per account (D12). "As soon as a seller lists a product, buyers see it" — satisfied in-process. **A real database (e.g. Supabase) is the production step** for cross-instance persistence/realtime; kept in-memory to honour the minimal-backend scope.
+
+### D28 — User profiles + saved addresses + offers routes + cart stepper
+- **Decision:** A user icon menu replaces the email; `/account` manages profile (name, gender, contact) + saved addresses (add/delete). A seller's profile name becomes their storefront name shown to buyers. Offers open on dedicated `/offers` + `/offers/[id]` routes (offer info + its products). Add-to-cart becomes a quantity stepper once an item is in the cart.
+- **Why:** Direct seller feedback — richer identity, offer detail pages, and inline quantity control.
