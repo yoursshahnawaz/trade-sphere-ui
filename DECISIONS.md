@@ -113,3 +113,17 @@ Short records of non-obvious engineering choices: **what** was decided, the **al
 - **Decision:** Pin `@tanstack/react-table@^8` (resolves to 8.21.3).
 - **Why:** npm `latest` now points at v9 (9.1.x), which has a different API surface. Pinning `^8` keeps the documented v8 hooks (`getCoreRowModel()` factories, `flexRender`, `getIsSorted()` → `aria-sort`) the inventory table is built on.
 - **Notes:** `useReactTable` returns non-memoizable functions, so this one component opts out of the React Compiler (a documented, expected trade-off) via a single `eslint-disable`. API routes enforce their own **401 (no session) / 403 (wrong role)** distinction (`requireSeller`), not just the proxy gate. The portal lives in a `(portal)` route group so its nav layout doesn't wrap the public `/seller/register`.
+
+### D19 — Unified catalog: seller products feed the buyer storefront
+- **Alternatives:** Keep the Phase 3 buyer seed and the Phase 5 seller store as two disconnected mocks (seller portal never affects the storefront).
+- **Decision:** The buyer catalog is `seedProducts` (representing other sellers) **plus every seller's ACTIVE products**. `queryProducts`/`getProduct` union the two; `cart-store` re-derives lines through `getProduct`; seller product ids are prefixed with the uid so they're unique in the union. Draft products never reach buyers.
+- **Why:** A multi-vendor marketplace means buyers see sellers' products — edits, deletes, stock, and offers must reflect on the storefront. The union keeps the demo catalog populated without a full data-model rewrite of merged Phase 3 code.
+
+### D20 — Offers are a per-product sale price; cart charges the effective price
+- **Alternatives:** Percent-discount; a separate promo-code system; storefront-invisible offers.
+- **Decision:** `salePriceCents` (optional, must be `< priceCents`) on the product. Storefront + inventory show the struck-through original next to the sale price; `effectivePriceCents()` is the single source for what the buyer pays, used by the cart re-derivation and optimistic client adds. A PATCH with `salePriceCents: null` clears an offer.
+- **Why:** Simplest offer model that's honest end-to-end (buyer sees it, pays it, order totals reflect it). Kept in one helper so display and billing never drift.
+
+### D21 — Seller orders + role-appropriate chrome
+- **Decision:** Seller "active orders" is backed by deterministic mock orders (`seller-orders.ts`, list + detail RSC pages, ownership scoped by uid) rather than a bare KPI number; the dashboard KPI is the count of non-delivered orders. The global header hides the buyer cart and buyer "My orders" for sellers, showing seller portal links instead (roles are one-per-account, D12).
+- **Why:** Sellers manage orders, they don't shop. Quantities in the deterministic generator use unsigned shifts to stay positive (a signed `>>` on a 32-bit hash can go negative → zero/negative quantities).
