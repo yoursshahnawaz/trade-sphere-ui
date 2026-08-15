@@ -1,31 +1,19 @@
 import { NextResponse, type NextRequest } from 'next/server'
-import { requireSession, isSameOrigin } from '@/lib/server/http'
-import type { SessionClaims } from '@/lib/server/session'
+import { isSameOrigin } from '@/lib/server/http'
+import { requireSeller, denySeller } from '@/lib/server/seller-auth'
 import { sellerProductInputSchema } from '@/lib/schemas/seller-product-schema'
 import { listSellerProducts, addSellerProduct } from '@/lib/server/seller-store'
 
-// Preserve the 401 (no session) vs 403 (wrong role) distinction the other routes use.
-async function requireSeller(): Promise<{ session: SessionClaims } | { status: 401 | 403 }> {
-  const session = await requireSession()
-  if (!session) return { status: 401 }
-  if (session.role !== 'seller') return { status: 403 }
-  return { session }
-}
-
-function deny(status: 401 | 403): NextResponse {
-  return NextResponse.json({ error: status === 401 ? 'unauthorized' : 'forbidden' }, { status })
-}
-
 export async function GET(): Promise<NextResponse> {
   const gate = await requireSeller()
-  if ('status' in gate) return deny(gate.status)
+  if ('status' in gate) return denySeller(gate.status)
   return NextResponse.json({ products: listSellerProducts(gate.session.sub) })
 }
 
 export async function POST(request: NextRequest): Promise<NextResponse> {
   if (!isSameOrigin(request)) return NextResponse.json({ error: 'forbidden' }, { status: 403 })
   const gate = await requireSeller()
-  if ('status' in gate) return deny(gate.status)
+  if ('status' in gate) return denySeller(gate.status)
 
   let raw: unknown
   try {
@@ -35,6 +23,9 @@ export async function POST(request: NextRequest): Promise<NextResponse> {
   }
   const parsed = sellerProductInputSchema.safeParse(raw)
   if (!parsed.success) return NextResponse.json({ error: 'invalid body' }, { status: 400 })
+  if (parsed.data.salePriceCents != null && parsed.data.salePriceCents >= parsed.data.priceCents) {
+    return NextResponse.json({ error: 'sale price must be less than price' }, { status: 400 })
+  }
 
   const product = addSellerProduct(gate.session.sub, parsed.data)
   return NextResponse.json({ product }, { status: 201 })

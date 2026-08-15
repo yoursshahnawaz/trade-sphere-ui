@@ -71,4 +71,23 @@ export const handlers = [
     mswSellerProducts = [...mswSellerProducts, product]
     return HttpResponse.json({ product }, { status: 201 })
   }),
+  http.get('/api/seller/products/:id', ({ params }) => {
+    const product = mswSellerProducts.find((p) => p.id === params.id)
+    return product ? HttpResponse.json({ product }) : new HttpResponse(null, { status: 404 })
+  }),
+  http.patch('/api/seller/products/:id', async ({ params, request }) => {
+    const idx = mswSellerProducts.findIndex((p) => p.id === params.id)
+    if (idx < 0) return new HttpResponse(null, { status: 404 })
+    const { salePriceCents, ...rest } = (await request.json()) as Partial<SellerProduct> & {
+      salePriceCents?: number | null
+    }
+    const updated: SellerProduct = { ...mswSellerProducts[idx]!, ...rest }
+    if (salePriceCents !== undefined) updated.salePriceCents = salePriceCents ?? undefined
+    mswSellerProducts = mswSellerProducts.map((p, i) => (i === idx ? updated : p))
+    return HttpResponse.json({ product: updated })
+  }),
+  http.delete('/api/seller/products/:id', ({ params }) => {
+    mswSellerProducts = mswSellerProducts.filter((p) => p.id !== params.id)
+    return HttpResponse.json({ ok: true })
+  }),
 ]
