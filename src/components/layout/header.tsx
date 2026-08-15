@@ -24,6 +24,7 @@ export function Header(): ReactNode {
   const cartCount = useAppSelector(selectCartCount)
   const dispatch = useAppDispatch()
   const router = useRouter()
+  const isSeller = status === 'authenticated' && user?.role === 'seller'
 
   async function handleLogout(): Promise<void> {
     await authClient.logout()
@@ -39,22 +40,25 @@ export function Header(): ReactNode {
           Trade-Sphere
         </Link>
         <nav className="flex items-center gap-2">
-          <button
-            type="button"
-            aria-label={`Cart, ${cartCount} item${cartCount === 1 ? '' : 's'}`}
-            onClick={() => dispatch(setCartDrawerOpen(true))}
-            className="relative rounded-md p-2 text-foreground/80 hover:bg-accent hover:text-foreground"
-          >
-            <ShoppingCart className="size-5" />
-            {cartCount > 0 && (
-              <span
-                aria-live="polite"
-                className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground"
-              >
-                {cartCount}
-              </span>
-            )}
-          </button>
+          {/* Sellers don't shop — the cart is buyer-only chrome. */}
+          {!isSeller && (
+            <button
+              type="button"
+              aria-label={`Cart, ${cartCount} item${cartCount === 1 ? '' : 's'}`}
+              onClick={() => dispatch(setCartDrawerOpen(true))}
+              className="relative rounded-md p-2 text-foreground/80 hover:bg-accent hover:text-foreground"
+            >
+              <ShoppingCart className="size-5" />
+              {cartCount > 0 && (
+                <span
+                  aria-live="polite"
+                  className="absolute -top-0.5 -right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-medium text-primary-foreground"
+                >
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          )}
 
           {status === 'authenticated' && user ? (
             <DropdownMenu>
@@ -66,11 +70,17 @@ export function Header(): ReactNode {
                   <DropdownMenuLabel>{user.email ?? 'Signed in'}</DropdownMenuLabel>
                 </DropdownMenuGroup>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => router.push('/orders')}>My orders</DropdownMenuItem>
-                {user.role === 'seller' && (
-                  <DropdownMenuItem onClick={() => router.push('/seller')}>
-                    Seller dashboard
-                  </DropdownMenuItem>
+                {isSeller ? (
+                  <>
+                    <DropdownMenuItem onClick={() => router.push('/seller')}>
+                      Seller dashboard
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => router.push('/seller/orders')}>
+                      Seller orders
+                    </DropdownMenuItem>
+                  </>
+                ) : (
+                  <DropdownMenuItem onClick={() => router.push('/orders')}>My orders</DropdownMenuItem>
                 )}
                 <DropdownMenuItem variant="destructive" onClick={handleLogout}>
                   Log out

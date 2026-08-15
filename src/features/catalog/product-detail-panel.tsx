@@ -18,7 +18,16 @@ export function ProductDetailPanel({ product }: ProductDetailPanelProps): ReactN
 
   return (
     <div className="space-y-4">
-      <p className="text-2xl font-semibold">${(product.priceCents / 100).toFixed(2)}</p>
+      {product.salePriceCents != null ? (
+        <p className="text-2xl font-semibold">
+          ${(product.salePriceCents / 100).toFixed(2)}
+          <span className="ml-2 text-base font-normal text-muted-foreground line-through">
+            ${(product.priceCents / 100).toFixed(2)}
+          </span>
+        </p>
+      ) : (
+        <p className="text-2xl font-semibold">${(product.priceCents / 100).toFixed(2)}</p>
+      )}
       <p className={outOfStock ? 'text-destructive' : 'text-muted-foreground'}>
         {outOfStock ? 'Out of stock' : `${product.stock} in stock`}
       </p>
