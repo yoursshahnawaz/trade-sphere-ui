@@ -14,14 +14,15 @@ export interface CatalogFilterBarProps {
   onInStock: (value: boolean) => void
 }
 
-function toDollars(cents: number | null): string {
+function toRupees(cents: number | null): string {
   return cents == null ? '' : String(cents / 100)
 }
-function fromDollars(v: string): number | null {
+function fromRupees(v: string): number | null {
   return v === '' ? null : Math.round(Number(v) * 100)
 }
 
-const CONTROL = 'h-9 rounded-md border bg-background px-2 text-sm'
+const CONTROL =
+  'h-10 w-full rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50'
 
 export function CatalogFilterBar(props: CatalogFilterBarProps): ReactNode {
   const { category, onCategory, minPrice, onMinPrice, maxPrice, onMaxPrice, inStock, onInStock } = props
@@ -36,45 +37,58 @@ export function CatalogFilterBar(props: CatalogFilterBarProps): ReactNode {
   const categories = data ?? []
 
   return (
-    <div className="flex flex-wrap items-end gap-3">
-      <div className="flex flex-col gap-1">
-        <label htmlFor="filter-category" className="text-xs font-medium">Category</label>
+    <div className="flex flex-col gap-5">
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="filter-category" className="text-sm font-medium">
+          Category
+        </label>
         <select
           id="filter-category"
           value={category ?? ''}
           onChange={(e) => onCategory(e.target.value || null)}
           className={CONTROL}
         >
-          <option value="">All</option>
+          <option value="">All categories</option>
           {categories.map((c) => (
-            <option key={c} value={c}>{c}</option>
+            <option key={c} value={c} className="capitalize">
+              {c}
+            </option>
           ))}
         </select>
       </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="filter-min" className="text-xs font-medium">Min $</label>
-        <input
-          id="filter-min"
-          type="number"
-          min={0}
-          value={toDollars(minPrice)}
-          onChange={(e) => onMinPrice(fromDollars(e.target.value))}
-          className={`${CONTROL} w-24`}
-        />
+
+      <div className="flex flex-col gap-1.5">
+        <span className="text-sm font-medium">Price (₹)</span>
+        <div className="flex items-center gap-2">
+          <input
+            aria-label="Minimum price in rupees"
+            type="number"
+            min={0}
+            placeholder="Min"
+            value={toRupees(minPrice)}
+            onChange={(e) => onMinPrice(fromRupees(e.target.value))}
+            className={CONTROL}
+          />
+          <span className="text-muted-foreground">–</span>
+          <input
+            aria-label="Maximum price in rupees"
+            type="number"
+            min={0}
+            placeholder="Max"
+            value={toRupees(maxPrice)}
+            onChange={(e) => onMaxPrice(fromRupees(e.target.value))}
+            className={CONTROL}
+          />
+        </div>
       </div>
-      <div className="flex flex-col gap-1">
-        <label htmlFor="filter-max" className="text-xs font-medium">Max $</label>
+
+      <label className="flex items-center gap-2 text-sm font-medium">
         <input
-          id="filter-max"
-          type="number"
-          min={0}
-          value={toDollars(maxPrice)}
-          onChange={(e) => onMaxPrice(fromDollars(e.target.value))}
-          className={`${CONTROL} w-24`}
+          type="checkbox"
+          checked={inStock}
+          onChange={(e) => onInStock(e.target.checked)}
+          className="size-4 accent-primary"
         />
-      </div>
-      <label className="flex h-9 items-center gap-2 text-sm">
-        <input type="checkbox" checked={inStock} onChange={(e) => onInStock(e.target.checked)} />
         In stock only
       </label>
     </div>

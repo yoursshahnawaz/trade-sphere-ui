@@ -3,7 +3,7 @@
 import type { ReactNode } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { ShoppingCart, User, Tag } from 'lucide-react'
+import { ShoppingCart, User, Tag, Store } from 'lucide-react'
 import { useAppSelector, useAppDispatch } from '@/store/hooks'
 import { loggedOut } from '@/features/auth/auth-slice'
 import { authClient } from '@/features/auth/auth-client'
@@ -40,7 +40,16 @@ export function Header(): ReactNode {
           Trade-Sphere
         </Link>
         <nav aria-label="Primary" className="flex items-center gap-1 sm:gap-2">
-          {/* Sellers don't shop — offers + cart are buyer-only chrome. */}
+          {/* Sellers don't shop — shop/offers/cart are buyer-only chrome. */}
+          {!isSeller && (
+            <Link
+              href="/products"
+              className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm font-medium text-foreground/80 hover:bg-accent hover:text-foreground"
+            >
+              <Store className="size-4" />
+              <span className="hidden sm:inline">Shop</span>
+            </Link>
+          )}
           {!isSeller && (
             <Link
               href="/offers"
