@@ -54,6 +54,7 @@ function InventoryTableInner(): ReactNode {
   const [sorting, setSorting] = useState<SortingState>([])
   const [globalFilter, setGlobalFilter] = useState('')
 
+  // eslint-disable-next-line react-hooks/incompatible-library -- TanStack Table manages its own memoization; opting this component out of React Compiler is expected and safe.
   const table = useReactTable({
     data: data ?? EMPTY,
     columns,
