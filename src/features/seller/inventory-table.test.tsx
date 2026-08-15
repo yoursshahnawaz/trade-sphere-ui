@@ -1,7 +1,18 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import { render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+
+vi.mock('next/link', () => ({
+  default: ({ href, children, ...props }: { href: string; children: React.ReactNode }) => (
+    <a href={href} {...props}>
+      {children}
+    </a>
+  ),
+}))
+const { toastSuccess } = vi.hoisted(() => ({ toastSuccess: vi.fn() }))
+vi.mock('sonner', () => ({ toast: { success: toastSuccess, error: vi.fn() } }))
+
 import { InventoryTable } from './inventory-table'
 
 function setup(): void {
@@ -45,5 +56,15 @@ describe('InventoryTable', () => {
     expect(header).toHaveAttribute('aria-sort', 'none')
     await user.click(within(header).getByRole('button'))
     expect(header).toHaveAttribute('aria-sort', 'ascending')
+  })
+
+  it('adds stock inline via the row restock control', async () => {
+    const user = userEvent.setup()
+    setup()
+    await screen.findByText('Ergonomic Mouse')
+    const input = screen.getByLabelText(/add stock for ergonomic mouse/i)
+    await user.type(input, '5')
+    await user.click(within(input.closest('form') as HTMLElement).getByRole('button', { name: /add/i }))
+    await waitFor(() => expect(toastSuccess).toHaveBeenCalledWith(expect.stringMatching(/added 5/i)))
   })
 })

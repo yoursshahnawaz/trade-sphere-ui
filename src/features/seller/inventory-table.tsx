@@ -1,7 +1,9 @@
 'use client'
 
-import { useState, type ReactNode } from 'react'
-import { useQuery } from '@tanstack/react-query'
+import { useState, type FormEvent, type ReactNode } from 'react'
+import Link from 'next/link'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { toast } from 'sonner'
 import {
   useReactTable,
   getCoreRowModel,
@@ -13,24 +15,110 @@ import {
 } from '@tanstack/react-table'
 import { ErrorBoundary } from '@/components/error-boundary'
 import { productStatus, type ProductStatus } from '@/lib/seller-status'
-import { fetchSellerProducts } from './seller-api'
+import { fetchSellerProducts, updateSellerProduct, deleteSellerProduct } from './seller-api'
 import { StatusBadge } from './status-badge'
 import type { SellerProduct } from '@/lib/schemas/seller-product-schema'
 
-const price = (cents: number): string => `$${(cents / 100).toFixed(2)}`
+const dollars = (cents: number): string => `$${(cents / 100).toFixed(2)}`
+
+function PriceCell({ product }: { product: SellerProduct }): ReactNode {
+  if (product.salePriceCents == null) return <span>{dollars(product.priceCents)}</span>
+  return (
+    <span>
+      <span className="font-medium">{dollars(product.salePriceCents)}</span>{' '}
+      <span className="text-muted-foreground line-through">{dollars(product.priceCents)}</span>
+    </span>
+  )
+}
+
+function RowActions({ product }: { product: SellerProduct }): ReactNode {
+  const queryClient = useQueryClient()
+  const [busy, setBusy] = useState(false)
+  const [addQty, setAddQty] = useState('')
+
+  async function onRestock(e: FormEvent): Promise<void> {
+    e.preventDefault()
+    const n = Number(addQty)
+    if (!Number.isInteger(n) || n <= 0) return
+    setBusy(true)
+    try {
+      await updateSellerProduct(product.id, { stock: product.stock + n })
+      await queryClient.invalidateQueries({ queryKey: ['seller-products'] })
+      toast.success(`Added ${n} to ${product.title}.`)
+      setAddQty('')
+    } catch {
+      toast.error('Could not update stock.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function onDelete(): Promise<void> {
+    if (!window.confirm(`Delete "${product.title}"? This removes it from your storefront.`)) return
+    setBusy(true)
+    try {
+      await deleteSellerProduct(product.id)
+      await queryClient.invalidateQueries({ queryKey: ['seller-products'] })
+      toast.success('Product deleted.')
+    } catch {
+      toast.error('Could not delete the product.')
+      setBusy(false)
+    }
+  }
+
+  return (
+    <div className="flex items-center gap-2">
+      <form onSubmit={onRestock} className="flex items-center gap-1">
+        <label htmlFor={`add-${product.id}`} className="sr-only">
+          Add stock for {product.title}
+        </label>
+        <input
+          id={`add-${product.id}`}
+          type="number"
+          min="1"
+          value={addQty}
+          onChange={(e) => setAddQty(e.target.value)}
+          placeholder="+ qty"
+          className="w-16 rounded-md border border-foreground/15 px-2 py-1 text-sm"
+        />
+        <button type="submit" disabled={busy || !addQty} className="rounded-md border px-2 py-1 text-xs disabled:opacity-50">
+          Add
+        </button>
+      </form>
+      <Link href={`/seller/products/${product.id}/edit`} className="rounded-md border px-2 py-1 text-xs">
+        Edit
+      </Link>
+      <button
+        type="button"
+        onClick={onDelete}
+        disabled={busy}
+        className="rounded-md border border-destructive/40 px-2 py-1 text-xs text-destructive disabled:opacity-50"
+      >
+        Delete
+      </button>
+    </div>
+  )
+}
 
 // Module scope → referentially stable across renders (avoids react-table re-render churn).
 const EMPTY: SellerProduct[] = []
 const columns: ColumnDef<SellerProduct>[] = [
   { accessorKey: 'title', header: 'Product' },
   { accessorKey: 'category', header: 'Category' },
-  { accessorKey: 'priceCents', header: 'Price', cell: (c) => price(c.getValue<number>()) },
+  { accessorKey: 'priceCents', header: 'Price', cell: (c) => <PriceCell product={c.row.original} /> },
   { accessorKey: 'stock', header: 'Stock' },
   {
     id: 'status',
     accessorFn: (p) => productStatus(p), // accessor value → participates in global search
     header: 'Status',
     cell: (c) => <StatusBadge status={c.getValue<ProductStatus>()} />,
+  },
+  {
+    id: 'actions',
+    header: 'Actions',
+    enableSorting: false,
+    enableGlobalFilter: false,
+    cell: (c) => <RowActions product={c.row.original} />,
   },
 ]
 
